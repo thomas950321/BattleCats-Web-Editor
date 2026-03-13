@@ -160,18 +160,23 @@ class BCSFE_Service:
         if not self.current_save:
             return False
         if updates.get("clear_tutorial"):
-            self.current_save.tutorial_state = 3
+            core.StoryChapters.clear_tutorial(self.current_save)
+            
         if updates.get("clear_world"):
+            # 清除世界篇 (1-3)
             for i in range(3):
-                self.current_save.story.chapters[i].clear_progressive_stages_up_to(47)
+                self.current_save.story.chapters[i].clear_chapter()
+                
         if updates.get("clear_aku"):
-            try:
-                from bcsfe.core.game.map.aku import AkuChapters
-                aku = AkuChapters.read(self.current_save.data)
-                for stage in aku.stages:
-                    stage.clear_stage()
-            except:
-                pass
+            # 清除魔界 (Aku Realm)
+            if hasattr(self.current_save, "aku"):
+                aku = self.current_save.aku
+                # 遍歷所有星級與關卡
+                for chapters_stars in aku.chapters:
+                    for chapter in chapters_stars.chapters:
+                        for stage in chapter.stages:
+                            stage.clear_stage()
+            
         return True
 
     async def upload(self):

@@ -1,0 +1,362 @@
+/* 極簡平面化 CSS */
+:root {
+    --bg-color: #f4f4f7;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --primary-color: #4a6ee0;
+    --success-color: #2ed573;
+    --error-color: #ff4757;
+    --border-color: #dddddd;
+    --label-color: #777777;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+#app {
+    width: 100%;
+    max-width: 800px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    margin: 0;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+header p {
+    margin: 5px 0;
+    color: var(--label-color);
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+h2, h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: var(--label-color);
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+.form-group.row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-group.row .field {
+    flex: 1;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background-color: #3a5cc0;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #26af5f;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Dashboard Styles */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    background: #eee;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    background: #ddd;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+}
+
+.tab-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.input-item small {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.75rem;
+    color: var(--label-color);
+}
+
+.checkbox-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    border-radius: 4px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.notification.success { background-color: var(--success-color); }
+.notification.error { background-color: var(--error-color); }
+
+.section-title {
+    margin-top: 30px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
+    font-size: 1.1rem;
+}
+
+.tip {
+    font-size: 0.75rem;
+    color: var(--label-color);
+    display: block;
+    margin-top: 3px;
+}
+
+.tip.warn {
+    color: var(--error-color);
+    font-weight: bold;
+}
+
+.flex-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.flex-grid .input-item {
+    flex: 1 1 120px;
+}
+
+.sub-section {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+}
+
+.sub-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+    color: var(--primary-color);
+}
+
+/* Result Panel Styles */
+.success-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.icon-check {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background: var(--success-color);
+    color: white;
+    border-radius: 50%;
+    line-height: 40px;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.warning-text {
+    color: var(--error-color);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.result-box {
+    background: #f8f9fa;
+    border: 1px dashed var(--primary-color);
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 25px;
+}
+
+.result-item {
+    margin-bottom: 15px;
+}
+
+.result-item:last-child {
+    margin-bottom: 0;
+}
+
+.code-copy {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+.code-text {
+    font-family: monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.btn-copy {
+    background: #eee;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    color: var(--text-color);
+}
+
+.btn-copy:hover {
+    background: #ddd;
+}
+
+.action-footer {
+    display: flex;
+    justify-content: center;
+}
+
+/* Advanced Tab Styles */
+.advanced-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.adv-card {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.adv-card h4 {
+    margin: 0 0 12px 0;
+    color: #e67e22;
+    border-bottom: 1px solid #fed;
+    padding-bottom: 5px;
+    font-size: 1rem;
+}
+
+.adv-card .list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.adv-card label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.adv-card input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #e67e22;
+}
+
+.adv-card select {
+    border: 1px solid #ee7e22;
+    background: #fffaf5;
+}
+
+.tab-btn[data-tab="advanced"].active {
+    background: #e67e22 !important;
+}
+
+/* 滾動網格優化 */
+.scroll-grid {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}

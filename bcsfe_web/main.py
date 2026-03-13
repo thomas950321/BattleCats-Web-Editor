@@ -1,70 +1,85 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest
+from bcsfe_web.service import service
 import uvicorn
+import os
+import traceback
+import sys
+
+# 確保能加載 src 中的 bcsfe 模組
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_path = os.path.join(current_dir, "..", "src")
+if src_path not in sys.path:
+    sys.path.append(src_path)
+
+from bcsfe import core
 
 app = FastAPI(title="BCSFE Web Interface API")
 
-# 資料模型定義
-class SaveLogin(BaseModel):
-    transfer_code: str
-    confirmation_code: str
-    country_code: str = "en"
-    game_version: str = "13.0.0"
+# 全域異常處理器
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "traceback": traceback.format_exc()},
+    )
 
-class ItemUpdate(BaseModel):
-    catfood: Optional[int] = None
-    xp: Optional[int] = None
-    normal_tickets: Optional[int] = None
-    rare_tickets: Optional[int] = None
-    platinum_tickets: Optional[int] = None
-    legend_tickets: Optional[int] = None
+# 初始化核心數據
+@app.on_event("startup")
+async def startup_event():
+    core.core_data.init_data()
 
-class SaveDataResponse(BaseModel):
-    inquiry_code: str
-    catfood: int
-    xp: int
-    normal_tickets: int
-    rare_tickets: int
-    platinum_tickets: int
-    legend_tickets: int
-    tutorial_cleared: bool
-    # 進階進度可以在之後擴充
+# 掛載靜態檔案 (使用相對路徑)
+static_path = os.path.join(current_dir, "static")
+app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 @app.get("/")
 async def root():
-    return {"message": "BCSFE Web API is running"}
+    return FileResponse(os.path.join(static_path, "index.html"))
 
 @app.post("/login")
 async def login(credentials: SaveLogin):
-    # TODO: 串接 bcsfe.core.server.ServerHandler.from_codes
-    return {"status": "success", "message": "Logged in and save fetched (Mock)"}
+    success, message = await service.login_and_fetch(
+        credentials.transfer_code,
+        credentials.confirmation_code,
+        credentials.country_code,
+        credentials.game_version
+    )
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    return {"status": "success", "message": message}
 
 @app.get("/save/get")
 async def get_save():
-    # TODO: 回傳目前 Session 中的存檔數據
-    return {
-        "catfood": 20000,
-        "xp": 99999999,
-        "normal_tickets": 100,
-        "rare_tickets": 100,
-        "platinum_tickets": 9,
-        "legend_tickets": 4
-    }
+    data = service.get_save_data()
+    if not data:
+        raise HTTPException(status_code=404, detail="Save not loaded")
+    return data
 
 @app.post("/save/patch")
-async def patch_save(updates: ItemUpdate):
-    # TODO: 套用修改至記憶體中的 SaveFile 物件
+async def patch_save(updates: SavePatchRequest):
+    if updates.items:
+        service.patch_items(updates.items.model_dump(exclude_unset=True))
+    if updates.stages:
+        service.patch_stages(updates.stages.model_dump(exclude_unset=True))
+    if updates.advanced:
+        await service.patch_advanced(updates.advanced.model_dump(exclude_unset=True))
     return {"status": "success", "message": "Save patched in memory"}
 
 @app.post("/save/upload")
 async def upload_save():
-    # TODO: 執行上傳並回傳新碼
+    result, message = await service.upload()
+    if not result:
+        raise HTTPException(status_code=400, detail=message)
     return {
         "status": "success",
-        "new_transfer_code": "mock_code_123",
-        "new_confirmation_code": "4567"
+        "new_transfer_code": result["transfer_code"],
+        "new_confirmation_code": result["confirmation_code"]
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Render 會自動提供 PORT 環境變數
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

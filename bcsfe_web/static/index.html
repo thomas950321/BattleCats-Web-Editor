@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貓咪大戰爭修改器</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <h1>貓咪大戰爭</h1>
+            <p>極簡、直觀的存檔修改介面</p>
+        </header>
+
+        <main>
+            <!-- 登入面板 -->
+            <section id="login-panel" class="card">
+                <h2>引繼登入</h2>
+                <div class="form-group">
+                    <label for="transferCode">引繼碼 (Transfer Code)</label>
+                    <input type="text" id="transferCode" placeholder="請輸入引繼碼">
+                </div>
+                <div class="form-group">
+                    <label for="confCode">認證碼 (Confirmation Code)</label>
+                    <input type="text" id="confCode" placeholder="請輸入認證碼">
+                </div>
+                <div class="form-group row">
+                    <div class="field">
+                        <label for="countryCode">地區</label>
+                        <select id="countryCode">
+                            <option value="en">EN (美/歐)</option>
+                            <option value="tw">TW (台版)</option>
+                            <option value="jp">JP (日版)</option>
+                            <option value="kr">KR (韓版)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="gameVersion">版本</label>
+                        <input type="text" id="gameVersion" value="15.2.0">
+                    </div>
+                </div>
+                <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
+            </section>
+
+            <!-- 修改儀表板 (初始隱藏) -->
+            <section id="dashboard" class="hidden">
+                <div class="toolbar">
+                    <span id="inquiryCodeDisplay">ID: -----</span>
+                    <button id="btnUpload" class="btn-success">儲存並上傳至伺服器</button>
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="items">道具修改</button>
+                        <button class="tab-btn" data-tab="stages">關卡處理</button>
+                        <button class="tab-btn" data-tab="advanced" style="color: #e67e22; font-weight: bold;">進階功能 🚀</button>
+                    </div>
+                </div>
+
+                <section id="items" class="tab-content card active">
+                    <h3>核心物資</h3>
+                    <div class="grid">
+                        <div class="input-item">
+                            <label>貓罐頭</label>
+                            <input type="number" id="catfood" min="0" max="45000">
+                            <small class="tip">建議: 45,000 (較低水平更安全)</small>
+                        </div>
+                        <div class="input-item">
+                            <label>XP (經驗值)</label>
+                            <input type="number" id="xp" min="0" max="99999999">
+                            <small class="tip">上限: 99,999,999</small>
+                        </div>
+                        <div class="input-item">
+                            <label>NP (本能點數)</label>
+                            <input type="number" id="np" min="0" max="9999">
+                            <small class="tip">上限: 9,999</small>
+                        </div>
+                        <div class="input-item">
+                            <label>統率力 (Leadership)</label>
+                            <input type="number" id="leadership" min="0" max="9999">
+                            <small class="tip">上限: 9,999</small>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">扭蛋券 (高風險)</h3>
+                    <div class="grid">
+                        <div class="input-item">
+                            <label>銀券 (Normal)</label>
+                            <input type="number" id="normalTickets" min="0" max="2999">
+                            <small class="tip">上限: 2,999</small>
+                        </div>
+                        <div class="input-item">
+                            <label>金券 (Rare)</label>
+                            <input type="number" id="rareTickets" min="0" max="299">
+                            <small class="tip">上限: 299</small>
+                        </div>
+                        <div class="input-item">
+                            <label>白金券</label>
+                            <input type="number" id="platinumTickets" min="0" max="9">
+                            <small class="tip warn">高風險! 建議改修白金碎片</small>
+                        </div>
+                        <div class="input-item">
+                            <label>白金碎片</label>
+                            <input type="number" id="platinumShards" min="0" max="99">
+                        </div>
+                        <div class="input-item">
+                            <label>傳說券</label>
+                            <input type="number" id="legendTickets" min="0" max="4">
+                            <small class="tip warn">極高風險! 請謹慎修改</small>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">各類素材與道具</h3>
+                    <div class="scroll-grid">
+                        <div class="sub-section">
+                            <h4>戰鬥道具 (各項 9,999)</h4>
+                            <div id="battle-items-grid" class="flex-grid"></div>
+                        </div>
+                        <div class="sub-section">
+                            <h4>貓目石 (各項 9,999)</h4>
+                            <div id="catseyes-grid" class="flex-grid"></div>
+                        </div>
+                        <div class="sub-section">
+                            <h4>貓薄荷 (上限 998)</h4>
+                            <div id="catfruit-grid" class="flex-grid"></div>
+                        </div>
+                        <div class="sub-section">
+                            <h4>基地素材 (各項 9,999)</h4>
+                            <div id="base-materials-grid" class="flex-grid"></div>
+                        </div>
+                        <div class="sub-section">
+                            <h4>其他項目</h4>
+                            <div class="grid">
+                                <div class="input-item">
+                                    <label>本能玉 (上限 998)</label>
+                                    <input type="number" id="talentOrbs" min="0" max="998">
+                                </div>
+                                <div class="input-item">
+                                    <label>迷宮獎牌 (上限 9,999)</label>
+                                    <input type="number" id="labyrinthMedals" min="0" max="9999">
+                                </div>
+                                <div class="input-item">
+                                    <label>活動/幸運券</label>
+                                    <input type="number" id="eventTickets" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="stages" class="tab-content card hidden">
+                    <h3>關卡解鎖</h3>
+                    <div class="list">
+                        <div class="checkbox-item">
+                            <label><input type="checkbox" id="clearTutorial"> 清除新手教學</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <label><input type="checkbox" id="clearWorld"> 清除世界篇 (1-3)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <label><input type="checkbox" id="clearAku"> 清除魔界 (Aku Realm)</label>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="advanced" class="tab-content card hidden">
+                    <h3>進階批次修改 🚀</h3>
+                    <div class="advanced-grid">
+                        <div class="adv-card">
+                            <h4>貓咪全項套餐</h4>
+                            <div class="list">
+                                <label><input type="checkbox" id="advUnlockAll"> 全貓獲得 (EX-傳說)</label>
+                                <label><input type="checkbox" id="advMaxLevel"> 等級全滿 (含加值)</label>
+                                <label><input type="checkbox" id="advTrueForm"> 全形態解鎖 (三階)</label>
+                                <label><input type="checkbox" id="advMaxTalents"> 全本能滿等</label>
+                            </div>
+                        </div>
+                        <div class="adv-card">
+                            <h4>科技與優化</h4>
+                            <div class="list">
+                                <label><input type="checkbox" id="advMaxTech"> 全部基礎科技 20+10</label>
+                                <label><input type="checkbox" id="advMaxGamatoto"> 加碼多多 LV.130 + 滿 XP</label>
+                                <label><input type="checkbox" id="advBestMembers"> 10 位白金帽隊員</label>
+                            </div>
+                        </div>
+                        <div class="adv-card">
+                            <h4>主線進度</h4>
+                            <div class="list">
+                                <label><input type="checkbox" id="advMaxTreasures"> 主線三章全金寶</label>
+                                <label><input type="checkbox" id="advUnlockMedals"> 解鎖全獎章成就</label>
+                            </div>
+                        </div>
+                        <div class="adv-card">
+                            <h4>特殊物資</h4>
+                            <label>本能珠發放</label>
+                            <select id="advTalentOrbsOption" style="width: 100%; margin-top: 5px;">
+                                <option value="none">不更改</option>
+                                <option value="each_1">每種 S 級各 1 個</button>
+                                <option value="each_990">每種 S 級各 990 個</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+            <!-- 上傳結果面板 (初始隱藏) -->
+            <section id="result-panel" class="card hidden">
+                <div class="success-header">
+                    <span class="icon-check">✔</span>
+                    <h2>存檔上傳成功！</h2>
+                </div>
+                <p class="warning-text">請務必記下並妥善保存下列資訊，原有的引繼碼已失效。</p>
+
+                <div class="result-box">
+                    <div class="result-item">
+                        <label>新引繼碼 (New Transfer Code)</label>
+                        <div class="code-copy">
+                            <span id="resTransferCode" class="code-text">-----</span>
+                            <button class="btn-copy" data-target="resTransferCode">複製</button>
+                        </div>
+                    </div>
+                    <div class="result-item">
+                        <label>新認證碼 (New Confirmation Code)</label>
+                        <div class="code-copy">
+                            <span id="resConfCode" class="code-text">-----</span>
+                            <button class="btn-copy" data-target="resConfCode">複製</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <button id="btnRestart" class="btn-primary">返回登入頁面</button>
+                </div>
+            </section>
+        </main>
+
+        <div id="notification" class="notification hidden"></div>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

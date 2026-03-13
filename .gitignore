@@ -3,8 +3,8 @@
 __pychache__
 *.pyc
 /tests/saves/*
-!.github/
 .*
+!.github/
 *.egg*
 src/bcsfe/files/game_data
 src/bcsfe/files/map_names

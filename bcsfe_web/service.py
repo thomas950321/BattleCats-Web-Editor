@@ -9,8 +9,9 @@ if src_path not in sys.path:
 
 try:
     from bcsfe import core
-except ImportError:
-    print(f"Error: Could not find bcsfe source in {src_path}")
+except ImportError as e:
+    print(f"Error: Could not import bcsfe. If the path is correct ({src_path}), check for missing dependencies.")
+    print(f"Traceback: {e}")
 
 class BCSFE_Service:
     def __init__(self):

@@ -4,5 +4,9 @@ pydantic
 requests
 python-multipart
 slowapi
-colored
+colored==1.4.4
 pyyaml
+aenum
+pyjwt
+beautifulsoup4
+argparse

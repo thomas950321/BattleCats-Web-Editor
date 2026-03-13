@@ -1,0 +1,16 @@
+{
+    "short_name": "default",
+    "name": "Default",
+    "description": "Default theme of the editor",
+    "author": "fieryhenry",
+    "version": "1.0.0",
+    "colors": {
+        "primary": "#FFFFFF",
+        "secondary": "#FFFFFF",
+        "quaternary": "#008000",
+        "tertiary": "#00FFFF",
+        "error": "#FF0000",
+        "warning": "#FF0000",
+        "success": "#00FF00"
+    }
+}

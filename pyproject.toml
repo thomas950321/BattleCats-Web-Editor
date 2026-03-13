@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bcsfe"
+authors = [{ name = "fieryhenry" }]
+description = "A save file editor for The Battle Cats"
+license = "GPL-3.0-or-later"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "Topic :: Utilities",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "aenum",
+  "colored==1.4.4",
+  "pyjwt",
+  "requests",
+  "pyyaml",
+  "beautifulsoup4",
+  "argparse",
+]
+dynamic = ["version"]
+keywords = ["battle cats", "save editor", "hacking"]
+
+[project.urls]
+Homepage = "https://codeberg.org/fieryhenry/BCSFE-Python"
+Repository = "https://codeberg.org/fieryhenry/BCSFE-Python"
+Issues = "https://codeberg.org/fieryhenry/BCSFE-Python/issues"
+Changelog = "https://codeberg.org/fieryhenry/BCSFE-Python/raw/branch/main/CHANGELOG.md"
+
+[tool.setuptools.dynamic]
+version = { attr = "bcsfe.__version__" }
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[project.scripts]
+bcsfe = "bcsfe:run"

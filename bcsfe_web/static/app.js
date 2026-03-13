@@ -42,11 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const target = btn.dataset.tab;
-            
+
             // 按鈕狀態
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
             // 內容狀態
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.add('hidden');
@@ -58,6 +58,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // 項目名稱映射
+    const itemNames = {
+        '戰鬥道具': ['加速', '寶物雷達', '土豪貓', '貓咪電腦', '洞悉先機', '狙擊手'],
+        '貓眼石': ['EX', '稀有', '激稀有', '超激稀有', '傳說', '闇'],
+        '基地素材': ['紅磚', '羽毛', '備長炭', '鋼製齒輪', '黃金', '宇宙石', '神祕骨頭', '菊石'],
+        '貓薄荷': [
+            '紫色貓薄荷種子', '紅色貓薄荷種子', '藍色貓薄荷種子', '綠色貓薄荷種子', '黃色貓薄荷種子',
+            '紫色貓薄荷', '紅色貓薄荷', '藍色貓薄荷', '綠色貓薄荷', '黃色貓薄荷',
+            '彩虹貓薄荷', '惡魔貓薄荷', '古代貓薄荷', '黃金貓薄荷', '彩虹貓薄荷種子',
+            '惡魔貓薄荷種子', '古代貓薄荷種子', '黃金貓薄荷種子'
+        ]
+    };
+
     // 輔助函式：生成動態網格
     function generateGrid(containerId, data, prefix) {
         const container = document.getElementById(containerId);
@@ -66,8 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach((val, i) => {
             const item = document.createElement('div');
             item.className = 'input-item';
+            const name = (itemNames[prefix] && itemNames[prefix][i]) ? itemNames[prefix][i] : `${prefix} ${i}`;
             item.innerHTML = `
-                <label>${prefix} ${i}</label>
+                <label>${name}</label>
                 <input type="number" class="${prefix}-input" data-index="${i}" value="${val}" min="0">
             `;
             container.appendChild(item);
@@ -105,18 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification('存檔讀取成功！');
                 loginPanel.classList.add('hidden');
                 dashboard.classList.remove('hidden');
-                
+
                 // 抓取真實數據
                 const saveDataRes = await fetch('/save/get');
                 if (!saveDataRes.ok) throw new Error('無法獲取存檔詳細數據');
                 const saveData = await saveDataRes.json();
-                
+
                 // 基礎物資
                 document.getElementById('catfood').value = saveData.catfood;
                 document.getElementById('xp').value = saveData.xp;
                 document.getElementById('np').value = saveData.np || 0;
                 document.getElementById('leadership').value = saveData.leadership || 0;
-                
+
                 // 扭蛋券
                 document.getElementById('normalTickets').value = saveData.normal_tickets;
                 document.getElementById('rareTickets').value = saveData.rare_tickets;
@@ -128,13 +142,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('talentOrbs').value = saveData.talent_orbs || 0;
                 document.getElementById('labyrinthMedals').value = saveData.labyrinth_medals || 0;
                 document.getElementById('eventTickets').value = saveData.event_lucky_tickets || 0;
-                
+
                 // 動態生成素材列表
                 generateGrid('battle-items-grid', saveData.battle_items, '戰鬥道具');
                 generateGrid('catseyes-grid', saveData.catseyes, '貓目石');
                 generateGrid('catfruit-grid', saveData.catfruit, '貓薄荷');
                 generateGrid('base-materials-grid', saveData.base_materials, '基地素材');
-                
+
                 document.getElementById('inquiryCodeDisplay').textContent = `ID: ${saveData.inquiry_code || 'N/A'}`;
             } else {
                 showNotification('讀取失敗: ' + (result.detail || '碼錯誤或連線失敗'), 'error');
@@ -156,8 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 輔助函式：抓取動態列表數值
         const getListValues = (selector) => {
             return Array.from(document.querySelectorAll(selector))
-                        .sort((a,b) => a.dataset.index - b.dataset.index)
-                        .map(input => parseInt(input.value) || 0);
+                .sort((a, b) => a.dataset.index - b.dataset.index)
+                .map(input => parseInt(input.value) || 0);
         };
 
         const payload = {
@@ -212,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            
+
             if (!patchResp.ok) {
                 const errData = await patchResp.json();
                 throw new Error(errData.detail || '套用修改失敗');
@@ -225,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const errData = await uploadResp.json();
                 throw new Error(errData.detail || '伺服器上傳失敗');
             }
-            
+
             const result = await uploadResp.json();
 
             if (result.status === 'success') {

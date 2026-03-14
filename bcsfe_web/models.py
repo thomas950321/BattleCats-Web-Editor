@@ -24,6 +24,7 @@ class ItemUpdate(BaseModel):
     base_materials: Optional[List[int]] = None
     labyrinth_medals: Optional[int] = None
     event_lucky_tickets: Optional[int] = None
+    play_time: Optional[int] = None
 
 class AdvancedOptions(BaseModel):
     cats: Optional[Dict[str, bool]] = None
@@ -61,3 +62,4 @@ class SaveDataResponse(BaseModel):
     talent_orbs: int
     labyrinth_medals: int
     event_lucky_tickets: int
+    play_time: int

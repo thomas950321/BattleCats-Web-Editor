@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('talentOrbs').value = saveData.talent_orbs || 0;
                 document.getElementById('labyrinthMedals').value = saveData.labyrinth_medals || 0;
                 document.getElementById('eventTickets').value = saveData.event_lucky_tickets || 0;
+                document.getElementById('playTime').value = saveData.play_time || 0;
 
                 // 動態生成素材列表
                 generateGrid('battle-items-grid', saveData.battle_items, '戰鬥道具');
@@ -188,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 talent_orbs: parseInt(document.getElementById('talentOrbs').value),
                 labyrinth_medals: parseInt(document.getElementById('labyrinthMedals').value),
                 event_lucky_tickets: parseInt(document.getElementById('eventTickets').value),
+                play_time: parseInt(document.getElementById('playTime').value),
                 // 動態列表
                 battle_items: getListValues('.戰鬥道具-input'),
                 catseyes: getListValues('.貓目石-input'),

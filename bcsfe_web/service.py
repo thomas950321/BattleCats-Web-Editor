@@ -63,7 +63,8 @@ class BCSFE_Service:
             "base_materials": [item.amount for item in self.current_save.ototo.base_materials.materials] if hasattr(self.current_save, "ototo") else [],
             "talent_orbs": len(getattr(self.current_save.talent_orbs, "orbs", {})) if hasattr(self.current_save, "talent_orbs") else 0,
             "labyrinth_medals": getattr(self.current_save, "labyrinth_medals", [0])[0] if getattr(self.current_save, "labyrinth_medals", None) else 0,
-            "event_lucky_tickets": getattr(self.current_save, "lucky_tickets", [0])[0] if getattr(self.current_save, "lucky_tickets", None) else 0
+            "event_lucky_tickets": getattr(self.current_save, "lucky_tickets", [0])[0] if getattr(self.current_save, "lucky_tickets", None) else 0,
+            "play_time": getattr(self.current_save.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(self.current_save, "officer_pass") else 0
         }
 
     def patch_items(self, updates: dict):
@@ -111,6 +112,11 @@ class BCSFE_Service:
             self.current_save.labyrinth_medals = [updates["labyrinth_medals"]]
         if "event_lucky_tickets" in updates and updates["event_lucky_tickets"] is not None:
             self.current_save.lucky_tickets = [updates["event_lucky_tickets"]]
+        
+        if "play_time" in updates and updates["play_time"] is not None:
+            # Convert hours back to frames (1 hour = 3600 seconds * 30 FPS)
+            if hasattr(self.current_save, "officer_pass"):
+                self.current_save.officer_pass.play_time = updates["play_time"] * 3600 * 30
             
         return True
 

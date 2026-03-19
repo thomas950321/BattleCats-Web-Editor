@@ -2,246 +2,709 @@
 <html lang="zh-TW">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>貓咪大戰爭修改器</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>貓咪大戰爭修改器</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --border: #e0e4ea;
+      --primary: #3a7bd5;
+      --primary-dark: #2e62b0;
+      --success: #27ae60;
+      --success-dark: #1e8449;
+      --warn: #e67e22;
+      --danger: #e74c3c;
+      --text: #2c3e50;
+      --muted: #7f8c8d;
+      --label: #34495e;
+      --input-bg: #f8f9fa;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    #app {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    header {
+      text-align: center;
+      padding: 24px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+
+    .card h3.section-title {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group>label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group.row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-group.row .field {
+      flex: 1;
+    }
+
+    .form-group.row .field>label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+    }
+
+    input[type="number"] {
+      text-align: right;
+    }
+
+    small.tip {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    small.tip.warn {
+      color: var(--warn);
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .input-item>label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--label);
+      margin-bottom: 4px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    #inquiryCodeDisplay {
+      font-size: 12px;
+      font-family: monospace;
+      background: #f0f2f5;
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 6px;
+      color: var(--muted);
+      margin-right: auto;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-primary,
+    .btn-success {
+      padding: 9px 18px;
+      border-radius: 7px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background: var(--success-dark);
+    }
+
+    .btn-copy {
+      padding: 4px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .btn-copy:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .scroll-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .sub-section {
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .sub-section h4 {
+      margin-bottom: 10px;
+    }
+
+    .flex-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px;
+    }
+
+    .flex-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 8px;
+    }
+
+    .flex-item label {
+      font-size: 12px;
+      color: var(--label);
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .flex-item input[type="number"] {
+      width: 64px;
+      min-width: 64px;
+      padding: 4px 6px;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checkbox-item label,
+    .list>label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .list>label input[type="checkbox"],
+    .checkbox-item label input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      accent-color: var(--primary);
+    }
+
+    .advanced-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .adv-card {
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .success-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .icon-check {
+      width: 30px;
+      height: 30px;
+      background: var(--success);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .warning-text {
+      font-size: 13px;
+      color: var(--warn);
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    .result-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .result-item>label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .code-copy {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+
+    .code-text {
+      font-family: monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      flex: 1;
+    }
+
+    .action-footer {
+      margin-top: 18px;
+    }
+
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--text);
+      color: #fff;
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      z-index: 999;
+    }
+
+    .notification.success {
+      background: var(--success);
+    }
+
+    .notification.error {
+      background: var(--danger);
+    }
+
+    .notification.warn {
+      background: var(--warn);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body>
-    <div id="app">
-        <header>
-            <h1>貓咪大戰爭</h1>
-            <p>極簡、直觀的存檔修改介面</p>
-        </header>
+  <div id="app">
+    <header>
+      <h1>貓咪大戰爭修改器</h1>
+    </header>
 
-        <main>
-            <!-- 登入面板 -->
-            <section id="login-panel" class="card">
-                <h2>引繼登入</h2>
-                <div class="form-group">
-                    <label for="transferCode">引繼碼 (Transfer Code)</label>
-                    <input type="text" id="transferCode" placeholder="請輸入引繼碼">
+    <main>
+      <!-- 登入面板 -->
+      <section id="login-panel" class="card">
+        <h2>引繼登入</h2>
+        <div class="form-group">
+          <label for="transferCode">引繼碼 (Transfer Code)</label>
+          <input type="text" id="transferCode" placeholder="請輸入引繼碼">
+        </div>
+        <div class="form-group">
+          <label for="confCode">認證碼 (Confirmation Code)</label>
+          <input type="text" id="confCode" placeholder="請輸入認證碼">
+        </div>
+        <div class="form-group row">
+          <div class="field">
+            <label for="countryCode">地區</label>
+            <select id="countryCode">
+              <option value="en">EN (美/歐)</option>
+              <option value="tw">TW (台版)</option>
+              <option value="jp">JP (日版)</option>
+              <option value="kr">KR (韓版)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="gameVersion">版本</label>
+            <input type="text" id="gameVersion" value="15.2.0">
+          </div>
+        </div>
+        <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
+      </section>
+
+      <!-- 修改儀表板 -->
+      <section id="dashboard" class="hidden">
+        <div class="toolbar">
+          <span id="inquiryCodeDisplay">ID: -----</span>
+          <button id="btnUpload" class="btn-success">儲存並上傳至伺服器</button>
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="items">道具修改</button>
+            <button class="tab-btn" data-tab="advanced">進階功能</button>
+          </div>
+        </div>
+
+        <!-- 道具修改 -->
+        <section id="items" class="tab-content card active">
+          <h3>核心物資</h3>
+          <div class="grid">
+            <div class="input-item">
+              <label>貓罐頭</label>
+              <input type="number" id="catfood" min="0" max="45000" placeholder="0">
+              <small class="tip">建議上限: 45,000</small>
+            </div>
+            <div class="input-item">
+              <label>XP 經驗值</label>
+              <input type="number" id="xp" min="0" max="99999999" placeholder="0">
+              <small class="tip">上限: 99,999,999</small>
+            </div>
+            <div class="input-item">
+              <label>NP 本能點數</label>
+              <input type="number" id="np" min="0" max="9999" placeholder="0">
+              <small class="tip">上限: 9,999</small>
+            </div>
+            <div class="input-item">
+              <label>統率力首領旗</label>
+              <input type="number" id="leadership" min="0" max="9999" placeholder="0">
+              <small class="tip">上限: 9,999</small>
+            </div>
+          </div>
+
+          <h3 class="section-title">扭蛋券 <span style="font-size:11px;color:var(--warn);font-weight:400;">(高風險)</span>
+          </h3>
+          <div class="grid">
+            <div class="input-item">
+              <label>銀券 Normal</label>
+              <input type="number" id="normalTickets" min="0" max="2999" placeholder="0">
+              <small class="tip">上限: 2,999</small>
+            </div>
+            <div class="input-item">
+              <label>金券 Rare</label>
+              <input type="number" id="rareTickets" min="0" max="299" placeholder="0">
+              <small class="tip">上限: 299</small>
+            </div>
+            <div class="input-item">
+              <label>白金券</label>
+              <input type="number" id="platinumTickets" min="0" max="9" placeholder="0">
+              <small class="tip warn">⚠ 高風險！建議改修白金碎片</small>
+            </div>
+            <div class="input-item">
+              <label>白金碎片</label>
+              <input type="number" id="platinumShards" min="0" max="99" placeholder="0">
+              <small class="tip">上限: 99</small>
+            </div>
+            <div class="input-item">
+              <label>傳說券</label>
+              <input type="number" id="legendTickets" min="0" max="4" placeholder="0">
+              <small class="tip warn">⚠ 極高風險！請謹慎修改</small>
+            </div>
+          </div>
+
+          <h3 class="section-title">各類素材與道具</h3>
+          <div class="scroll-grid">
+
+            <div class="sub-section">
+              <h4>戰鬥道具 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 9,999)</span></h4>
+              <div class="flex-grid" id="battle-items-grid"></div>
+            </div>
+            
+            <div class="sub-section">
+              <h4>喵力達 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 9,999)</span></h4>
+              <div class="flex-grid" id="catamins-grid"></div>
+            </div>
+
+            <div class="sub-section">
+              <h4>貓眼石 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 9,999)</span></h4>
+              <div class="flex-grid" id="catseyes-grid"></div>
+            </div>
+
+            <div class="sub-section">
+              <h4>貓薄荷 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 998)</span></h4>
+              <div class="flex-grid" id="catfruit-grid"></div>
+            </div>
+
+            <div class="sub-section">
+              <h4>基地素材 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 9,999)</span></h4>
+              <div class="flex-grid" id="base-materials-grid"></div>
+            </div>
+
+            <div class="sub-section">
+              <h4>本能玉 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 998)</span></h4>
+              <div class="flex-grid" id="talent-orbs-grid"></div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- 進階功能 -->
+        <section id="advanced" class="tab-content card hidden">
+          <h3>進階批次修改 🚀</h3>
+          <div class="advanced-grid">
+
+            <div class="adv-card">
+              <h4>關卡解鎖</h4>
+              <div class="list">
+                <label><input type="checkbox" id="clearTutorial"> 清除新手教學</label>
+                <label><input type="checkbox" id="clearWorld"> 清除世界篇 (1–3 章)</label>
+                <label><input type="checkbox" id="clearFuture"> 清除未來篇 (1–3 章)</label>
+                <label><input type="checkbox" id="clearCosmos"> 清除宇宙篇 (1–3 章)</label>
+                <label><input type="checkbox" id="clearAku"> 清除魔界 (Aku Realm)</label>
+              </div>
+            </div>
+
+            <div class="adv-card">
+              <h4>主線進度</h4>
+              <div class="list">
+                <label><input type="checkbox" id="advMaxTreasuresWorld"> 世界篇滿金寶 (1-3 章)</label>
+                <label><input type="checkbox" id="advMaxTreasuresFuture"> 未來篇滿金寶 (1-3 章)</label>
+                <label><input type="checkbox" id="advMaxTreasuresCosmos"> 宇宙篇滿金寶 (1-3 章)</label>
+                <label><input type="checkbox" id="advUnlockMedals"> 解鎖全獎章成就</label>
+              </div>
+            </div>
+
+            <div class="adv-card">
+              <h4>貓咪全項套餐</h4>
+              <div class="list">
+                <label><input type="checkbox" id="advUnlockAll"> 全貓獲得 (EX–傳說)</label>
+                <label><input type="checkbox" id="advMaxLevel"> 等級全滿 (含加值)</label>
+                <label><input type="checkbox" id="advTrueForm"> 全形態解鎖 (三階)</label>
+                <label><input type="checkbox" id="advFourthForm"> 全形態解鎖 (四階)</label>
+                <label><input type="checkbox" id="advMaxTalents"> 全本能滿等</label>
+              </div>
+            </div>
+
+            <div class="adv-card">
+              <h4>科技與優化</h4>
+              <div class="list">
+                <label><input type="checkbox" id="advMaxTech"> 全部基礎科技 20+10</label>
+                <label><input type="checkbox" id="advMaxGamatoto"> 加碼多多 LV.130</label>
+                <label><input type="checkbox" id="advBestMembers"> 10 位白金帽隊員</label>
+              </div>
+            </div>
+            <div class="adv-card" style="grid-column: 1 / -1;">
+              <h4>其他參數設定</h4>
+              <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
+                <div class="input-item">
+                  <label>迷宮獎牌</label>
+                  <input type="number" id="labyrinthMedals" min="0" max="9999" placeholder="0">
+                  <small class="tip">上限: 9,999</small>
                 </div>
-                <div class="form-group">
-                    <label for="confCode">認證碼 (Confirmation Code)</label>
-                    <input type="text" id="confCode" placeholder="請輸入認證碼">
+                <div class="input-item">
+                  <label>遊戲時數 (小時)</label>
+                  <input type="number" id="playTime" min="0" placeholder="0">
+                  <small class="tip">建議與存檔進度相符</small>
                 </div>
-                <div class="form-group row">
-                    <div class="field">
-                        <label for="countryCode">地區</label>
-                        <select id="countryCode">
-                            <option value="en">EN (美/歐)</option>
-                            <option value="tw">TW (台版)</option>
-                            <option value="jp">JP (日版)</option>
-                            <option value="kr">KR (韓版)</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="gameVersion">版本</label>
-                        <input type="text" id="gameVersion" value="15.2.0">
-                    </div>
-                </div>
-                <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
-            </section>
+              </div>
+            </div>
 
-            <!-- 修改儀表板 (初始隱藏) -->
-            <section id="dashboard" class="hidden">
-                <div class="toolbar">
-                    <span id="inquiryCodeDisplay">ID: -----</span>
-                    <button id="btnUpload" class="btn-success">儲存並上傳至伺服器</button>
-                    <div class="tabs">
-                        <button class="tab-btn active" data-tab="items">道具修改</button>
-                        <button class="tab-btn" data-tab="stages">關卡處理</button>
-                        <button class="tab-btn" data-tab="advanced" style="color: #e67e22; font-weight: bold;">進階功能 🚀</button>
-                    </div>
-                </div>
+          </div>
+        </section>
+      </section>
 
-                <section id="items" class="tab-content card active">
-                    <h3>核心物資</h3>
-                    <div class="grid">
-                        <div class="input-item">
-                            <label>貓罐頭</label>
-                            <input type="number" id="catfood" min="0" max="45000">
-                            <small class="tip">建議: 45,000 (較低水平更安全)</small>
-                        </div>
-                        <div class="input-item">
-                            <label>XP (經驗值)</label>
-                            <input type="number" id="xp" min="0" max="99999999">
-                            <small class="tip">上限: 99,999,999</small>
-                        </div>
-                        <div class="input-item">
-                            <label>NP (本能點數)</label>
-                            <input type="number" id="np" min="0" max="9999">
-                            <small class="tip">上限: 9,999</small>
-                        </div>
-                        <div class="input-item">
-                            <label>統率力 (Leadership)</label>
-                            <input type="number" id="leadership" min="0" max="9999">
-                            <small class="tip">上限: 9,999</small>
-                        </div>
-                    </div>
+      <!-- 上傳結果面板 -->
+      <section id="result-panel" class="card hidden">
+        <div class="success-header">
+          <div class="icon-check">✔</div>
+          <h2>存檔上傳成功！</h2>
+        </div>
+        <p class="warning-text">請務必記下並妥善保存下列資訊，原有的引繼碼已失效。</p>
+        <div class="result-box">
+          <div class="result-item">
+            <label>新引繼碼 (New Transfer Code)</label>
+            <div class="code-copy">
+              <span id="resTransferCode" class="code-text">-----</span>
+              <button class="btn-copy" data-target="resTransferCode">複製</button>
+            </div>
+          </div>
+          <div class="result-item">
+            <label>新認證碼 (New Confirmation Code)</label>
+            <div class="code-copy">
+              <span id="resConfCode" class="code-text">-----</span>
+              <button class="btn-copy" data-target="resConfCode">複製</button>
+            </div>
+          </div>
+        </div>
+        <div class="action-footer">
+          <button id="btnRestart" class="btn-primary">返回登入頁面</button>
+        </div>
+      </section>
+    </main>
 
-                    <h3 class="section-title">扭蛋券 (高風險)</h3>
-                    <div class="grid">
-                        <div class="input-item">
-                            <label>銀券 (Normal)</label>
-                            <input type="number" id="normalTickets" min="0" max="2999">
-                            <small class="tip">上限: 2,999</small>
-                        </div>
-                        <div class="input-item">
-                            <label>金券 (Rare)</label>
-                            <input type="number" id="rareTickets" min="0" max="299">
-                            <small class="tip">上限: 299</small>
-                        </div>
-                        <div class="input-item">
-                            <label>白金券</label>
-                            <input type="number" id="platinumTickets" min="0" max="9">
-                            <small class="tip warn">高風險! 建議改修白金碎片</small>
-                        </div>
-                        <div class="input-item">
-                            <label>白金碎片</label>
-                            <input type="number" id="platinumShards" min="0" max="99">
-                        </div>
-                        <div class="input-item">
-                            <label>傳說券</label>
-                            <input type="number" id="legendTickets" min="0" max="4">
-                            <small class="tip warn">極高風險! 請謹慎修改</small>
-                        </div>
-                    </div>
+    <div id="notification" class="notification hidden"></div>
+  </div>
 
-                    <h3 class="section-title">各類素材與道具</h3>
-                    <div class="scroll-grid">
-                        <div class="sub-section">
-                            <h4>戰鬥道具 (各項 9,999)</h4>
-                            <div id="battle-items-grid" class="flex-grid"></div>
-                        </div>
-                        <div class="sub-section">
-                            <h4>貓目石 (各項 9,999)</h4>
-                            <div id="catseyes-grid" class="flex-grid"></div>
-                        </div>
-                        <div class="sub-section">
-                            <h4>貓薄荷 (上限 998)</h4>
-                            <div id="catfruit-grid" class="flex-grid"></div>
-                        </div>
-                        <div class="sub-section">
-                            <h4>基地素材 (各項 9,999)</h4>
-                            <div id="base-materials-grid" class="flex-grid"></div>
-                        </div>
-                        <div class="sub-section">
-                            <h4>其他項目</h4>
-                            <div class="grid">
-                                <div class="input-item">
-                                    <label>本能玉 (上限 998)</label>
-                                    <input type="number" id="talentOrbs" min="0" max="998">
-                                </div>
-                                <div class="input-item">
-                                    <label>迷宮獎牌 (上限 9,999)</label>
-                                    <input type="number" id="labyrinthMedals" min="0" max="9999">
-                                </div>
-                                <div class="input-item">
-                                    <label>活動/幸運券</label>
-                                    <input type="number" id="eventTickets" min="0">
-                                </div>
-                                <div class="input-item">
-                                    <label>遊戲時數 (小時)</label>
-                                    <input type="number" id="playTime" min="0">
-                                    <small class="tip">建議與存檔進度相符</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="stages" class="tab-content card hidden">
-                    <h3>關卡解鎖</h3>
-                    <div class="list">
-                        <div class="checkbox-item">
-                            <label><input type="checkbox" id="clearTutorial"> 清除新手教學</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <label><input type="checkbox" id="clearWorld"> 清除世界篇 (1-3)</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <label><input type="checkbox" id="clearAku"> 清除魔界 (Aku Realm)</label>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="advanced" class="tab-content card hidden">
-                    <h3>進階批次修改 🚀</h3>
-                    <div class="advanced-grid">
-                        <div class="adv-card">
-                            <h4>貓咪全項套餐</h4>
-                            <div class="list">
-                                <label><input type="checkbox" id="advUnlockAll"> 全貓獲得 (EX-傳說)</label>
-                                <label><input type="checkbox" id="advMaxLevel"> 等級全滿 (含加值)</label>
-                                <label><input type="checkbox" id="advTrueForm"> 全形態解鎖 (三階)</label>
-                                <label><input type="checkbox" id="advMaxTalents"> 全本能滿等</label>
-                            </div>
-                        </div>
-                        <div class="adv-card">
-                            <h4>科技與優化</h4>
-                            <div class="list">
-                                <label><input type="checkbox" id="advMaxTech"> 全部基礎科技 20+10</label>
-                                <label><input type="checkbox" id="advMaxGamatoto"> 加碼多多 LV.130 + 滿 XP</label>
-                                <label><input type="checkbox" id="advBestMembers"> 10 位白金帽隊員</label>
-                            </div>
-                        </div>
-                        <div class="adv-card">
-                            <h4>主線進度</h4>
-                            <div class="list">
-                                <label><input type="checkbox" id="advMaxTreasures"> 主線三章全金寶</label>
-                                <label><input type="checkbox" id="advUnlockMedals"> 解鎖全獎章成就</label>
-                            </div>
-                        </div>
-                        <div class="adv-card">
-                            <h4>特殊物資</h4>
-                            <label>本能珠發放</label>
-                            <select id="advTalentOrbsOption" style="width: 100%; margin-top: 5px;">
-                                <option value="none">不更改</option>
-                                <option value="each_1">每種 S 級各 1 個</option>
-                                <option value="each_990">每種 S 級各 990 個</option>
-                            </select>
-                        </div>
-                    </div>
-                </section>
-            </section>
-
-            <!-- 上傳結果面板 (初始隱藏) -->
-            <section id="result-panel" class="card hidden">
-                <div class="success-header">
-                    <span class="icon-check">✔</span>
-                    <h2>存檔上傳成功！</h2>
-                </div>
-                <p class="warning-text">請務必記下並妥善保存下列資訊，原有的引繼碼已失效。</p>
-
-                <div class="result-box">
-                    <div class="result-item">
-                        <label>新引繼碼 (New Transfer Code)</label>
-                        <div class="code-copy">
-                            <span id="resTransferCode" class="code-text">-----</span>
-                            <button class="btn-copy" data-target="resTransferCode">複製</button>
-                        </div>
-                    </div>
-                    <div class="result-item">
-                        <label>新認證碼 (New Confirmation Code)</label>
-                        <div class="code-copy">
-                            <span id="resConfCode" class="code-text">-----</span>
-                            <button class="btn-copy" data-target="resConfCode">複製</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-footer">
-                    <button id="btnRestart" class="btn-primary">返回登入頁面</button>
-                </div>
-            </section>
-        </main>
-
-        <div id="notification" class="notification hidden"></div>
-    </div>
-    <script src="/static/app.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 
 </html>

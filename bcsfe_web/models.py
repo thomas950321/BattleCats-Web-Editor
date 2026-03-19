@@ -23,6 +23,7 @@ class ItemUpdate(BaseModel):
     catfruit: Optional[List[int]] = None
     base_materials: Optional[List[int]] = None
     labyrinth_medals: Optional[int] = None
+    talent_orbs: Optional[List[int]] = None
     event_lucky_tickets: Optional[int] = None
     play_time: Optional[int] = None
 
@@ -30,12 +31,22 @@ class AdvancedOptions(BaseModel):
     cats: Optional[Dict[str, bool]] = None
     tech: Optional[Dict[str, bool]] = None
     progress: Optional[Dict[str, bool]] = None
+    special: Optional[Dict[str, bool]] = None
     talent_orbs_option: Optional[str] = None
 
 class StageOptions(BaseModel):
     clear_tutorial: Optional[bool] = None
     clear_world: Optional[bool] = None
+    clear_future: Optional[bool] = None
+    clear_cosmos: Optional[bool] = None
     clear_aku: Optional[bool] = None
+    max_treasures_world: Optional[bool] = None
+    max_treasures_future: Optional[bool] = None
+    max_treasures_cosmos: Optional[bool] = None
+    unlock_medals: Optional[bool] = None
+    clear_legend: Optional[bool] = None
+    clear_true_leg: Optional[bool] = None
+    clear_aku_gates: Optional[bool] = None
 
 class SavePatchRequest(BaseModel):
     items: Optional[ItemUpdate] = None

@@ -60,11 +60,12 @@ class BCSFE_Service:
             orb_info_list = OrbInfoList.create(self.current_save)
             if orb_info_list:
                 for i, orb in enumerate(orb_info_list.orb_info_list):
-                    if not orb.target:
+                    if not orb.target or orb.rank != "S":
                         continue # 過濾無屬性對象的冗餘數據
                     
-                    effect_text = orb.effect.replace("%@", orb.rank)
-                    effect_text += f" ({orb.target})"
+                    print(f"DEBUG ORB: effect={orb.effect!r}, rank={orb.rank!r}, target={orb.target!r}", flush=True)
+                    effect_text = orb.effect.replace("%@", "{}")
+                    effect_text = effect_text.format(" S", orb.target or "")
                     
                     count = 0
                     if hasattr(self.current_save.talent_orbs, "orbs") and i in self.current_save.talent_orbs.orbs:
@@ -90,7 +91,7 @@ class BCSFE_Service:
             "catfood": getattr(self.current_save, "catfood", 0),
             "xp": getattr(self.current_save, "xp", 0),
             "np": getattr(self.current_save, "np", 0),
-            "leadership": getattr(self.current_save, "current_energy", 0),
+            "leadership": getattr(self.current_save, "leadership", 0),
             "normal_tickets": getattr(self.current_save, "normal_tickets", 0),
             "rare_tickets": getattr(self.current_save, "rare_tickets", 0),
             "platinum_tickets": getattr(self.current_save, "platinum_tickets", 0),
@@ -103,7 +104,7 @@ class BCSFE_Service:
             "catfruit": getattr(self.current_save, "catfruit", []),
             "base_materials": [item.amount for item in self.current_save.ototo.base_materials.materials] if hasattr(self.current_save, "ototo") else [],
             "talent_orbs": self.get_talent_orbs_list(),
-            "labyrinth_medals": getattr(self.current_save, "labyrinth_medals", [0])[0] if getattr(self.current_save, "labyrinth_medals", None) else 0,
+            "labyrinth_medals": getattr(self.current_save, "labyrinth_medals", []),
             "event_lucky_tickets": getattr(self.current_save, "lucky_tickets", [0])[0] if getattr(self.current_save, "lucky_tickets", None) else 0,
             "play_time": getattr(self.current_save.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(self.current_save, "officer_pass") else 0
         }
@@ -161,13 +162,13 @@ class BCSFE_Service:
                     
         if "talent_orbs" in updates and updates["talent_orbs"]:
             max_val = max_vals.get("talent_orbs") or 998
-            for i, val in enumerate(updates["talent_orbs"]):
+            for orb_id, val in updates["talent_orbs"].items():
                 if hasattr(self.current_save, "talent_orbs"):
-                    self.current_save.talent_orbs.set_orb(i, min(val, max_val))
+                    self.current_save.talent_orbs.set_orb(int(orb_id), min(val, max_val))
                         
-        if "labyrinth_medals" in updates and updates["labyrinth_medals"] is not None:
+        if "labyrinth_medals" in updates and updates["labyrinth_medals"]:
             max_val = max_vals.get("labyrinth_medals")
-            self.current_save.labyrinth_medals = [min(updates["labyrinth_medals"], max_val)]
+            self.current_save.labyrinth_medals = [min(val, max_val) for val in updates["labyrinth_medals"]]
             
         if "event_lucky_tickets" in updates and updates["event_lucky_tickets"] is not None:
             max_val = max_vals.get("event_tickets")
@@ -220,8 +221,14 @@ class BCSFE_Service:
                 self.current_save.gamatoto.level = 130
                 self.current_save.gamatoto.xp = 99999999
             if prog_opts.get("best_gamatoto_members"):
-                for member in self.current_save.gamatoto.members:
-                    member.member_type = 5
+                members_name = core.GamatotoMembersName(self.current_save)
+                legend_members = members_name.get_all_rarity(4)
+                helpers = []
+                if legend_members:
+                    # 取前 10 個傳說級隊員
+                    for member in legend_members[:10]:
+                        helpers.append(core.Helper(member.member_id))
+                self.current_save.gamatoto.helpers = core.Helpers(helpers)
 
         special_opts = advanced.get("special")
         if special_opts:

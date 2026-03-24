@@ -81,8 +81,25 @@ document.addEventListener('DOMContentLoaded', () => {
         '貓薄荷': [
             '紫色薄荷種子', '紅色薄荷種子', '藍色薄荷種子', '綠色薄荷種子', '黃色薄荷種子',
             '紫色貓薄荷', '紅色貓薄荷', '藍色貓薄荷', '綠色貓薄荷', '黃色貓薄荷',
-            '彩虹貓薄荷', '惡魔貓薄荷', '古代貓薄荷', '黃金貓薄荷', '彩虹薄荷種子',
-            '惡魔薄荷種子', '古代薄荷種子', '黃金薄荷種子'
+            '彩虹貓薄荷',
+            '古代貓薄荷種子',
+            '古代貓薄荷',
+            '彩虹貓薄荷種子',
+            '黃金貓薄荷',
+            '惡魔貓薄荷種子',
+            '惡魔貓薄荷',
+            '黃金貓薄荷種子',
+            '紫獸石',
+            '紅獸石',
+            '藍獸石',
+            '綠獸石',
+            '黃獸石',
+            '彩虹獸石',
+            '紫獸結晶',
+            '紅獸結晶',
+            '藍獸結晶',
+            '綠獸結晶',
+            '黃獸結晶'
         ]
     };
 
@@ -99,16 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let name = '';
             let amount = val;
+            let id = i;
             if (typeof val === 'object' && val !== null) {
                 name = val.name;
                 amount = val.amount;
+                id = val.id;
             } else {
                 name = (itemNames[prefix] && itemNames[prefix][i]) ? itemNames[prefix][i] : `${prefix} ${i + 1}`;
             }
 
             item.innerHTML = `
                 <label>${name}</label>
-                <input type="number" class="${prefix}-input" data-index="${i}" value="${amount}" min="0" max="${maxLimit}" placeholder="0">
+                <input type="number" class="${prefix}-input" data-index="${id}" value="${amount}" min="0" max="${maxLimit}" placeholder="0">
             `;
             container.appendChild(item);
         });
@@ -166,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 其他
                 generateGrid('talent-orbs-grid', saveData.talent_orbs || [], '本能玉');
-                document.getElementById('labyrinthMedals').value = saveData.labyrinth_medals || 0;
+                generateGrid('labyrinthMedalsGrid', saveData.labyrinth_medals || [], '迷宮獎牌');
                 document.getElementById('playTime').value = saveData.play_time || 0;
 
                 // 動態生成素材列表
@@ -201,6 +220,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 .map(input => parseInt(input.value) || 0);
         };
 
+        const getListMap = (selector) => {
+            const map = {};
+            document.querySelectorAll(selector).forEach(input => {
+                map[input.dataset.index] = parseInt(input.value) || 0;
+            });
+            return map;
+        };
+
         const payload = {
             items: {
                 catfood: parseInt(document.getElementById('catfood').value) || 0,
@@ -212,8 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 platinum_tickets: parseInt(document.getElementById('platinumTickets').value) || 0,
                 legend_tickets: parseInt(document.getElementById('legendTickets').value) || 0,
                 platinum_shards: parseInt(document.getElementById('platinumShards').value) || 0,
-                talent_orbs: getListValues('.本能玉-input'),
-                labyrinth_medals: parseInt(document.getElementById('labyrinthMedals').value) || 0,
+                talent_orbs: getListMap('.本能玉-input'),
+                labyrinth_medals: getListValues('.迷宮獎牌-input'),
                 play_time: parseInt(document.getElementById('playTime').value) || 0,
                 // 動態列表
                 battle_items: getListValues('.戰鬥道具-input'),

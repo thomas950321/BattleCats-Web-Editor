@@ -577,7 +577,7 @@
               <h4>戰鬥道具 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 9,999)</span></h4>
               <div class="flex-grid" id="battle-items-grid"></div>
             </div>
-            
+
             <div class="sub-section">
               <h4>喵力達 <span style="font-weight:400;color:var(--muted);font-size:12px;">(各項上限 9,999)</span></h4>
               <div class="flex-grid" id="catamins-grid"></div>
@@ -647,7 +647,7 @@
             <div class="adv-card">
               <h4>科技與優化</h4>
               <div class="list">
-                <label><input type="checkbox" id="advMaxTech"> 全部基礎科技 20+10</label>
+                <label><input type="checkbox" id="advMaxTech"> 全部基礎科技 30</label>
                 <label><input type="checkbox" id="advMaxGamatoto"> 加碼多多 LV.130</label>
                 <label><input type="checkbox" id="advBestMembers"> 10 位白金帽隊員</label>
               </div>
@@ -655,10 +655,9 @@
             <div class="adv-card" style="grid-column: 1 / -1;">
               <h4>其他參數設定</h4>
               <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
-                <div class="input-item">
+                <div class="input-item" style="grid-column: 1 / -1;">
                   <label>迷宮獎牌</label>
-                  <input type="number" id="labyrinthMedals" min="0" max="9999" placeholder="0">
-                  <small class="tip">上限: 9,999</small>
+                  <div id="labyrinthMedalsGrid" class="flex-grid" style="margin-top: 5px;"></div>
                 </div>
                 <div class="input-item">
                   <label>遊戲時數 (小時)</label>
@@ -704,7 +703,7 @@
     <div id="notification" class="notification hidden"></div>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=1.3"></script>
 </body>
 
 </html>

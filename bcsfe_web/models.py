@@ -22,8 +22,8 @@ class ItemUpdate(BaseModel):
     catseyes: Optional[List[int]] = None
     catfruit: Optional[List[int]] = None
     base_materials: Optional[List[int]] = None
-    labyrinth_medals: Optional[int] = None
-    talent_orbs: Optional[List[int]] = None
+    labyrinth_medals: Optional[List[int]] = None
+    talent_orbs: Optional[Dict[str, int]] = None
     event_lucky_tickets: Optional[int] = None
     play_time: Optional[int] = None
 
@@ -71,6 +71,6 @@ class SaveDataResponse(BaseModel):
     catfruit: List[int]
     base_materials: List[int]
     talent_orbs: int
-    labyrinth_medals: int
+    labyrinth_medals: List[int]
     event_lucky_tickets: int
     play_time: int

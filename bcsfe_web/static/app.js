@@ -308,6 +308,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultPanel.classList.remove('hidden');
                 resTransferCode.textContent = result.new_transfer_code;
                 resConfCode.textContent = result.new_confirmation_code;
+                
+                // 保存至本地瀏覽器，防止刷新遺失
+                localStorage.setItem('last_transfer_code', result.new_transfer_code);
+                localStorage.setItem('last_conf_code', result.new_confirmation_code);
+                
                 showNotification('上傳成功！請保存新碼。');
             }
         } catch (err) {
@@ -315,6 +320,20 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             btnUpload.disabled = false;
             btnUpload.textContent = '儲存並上傳至伺服器';
+        }
+    });
+
+    // 找回上次代碼
+    document.getElementById('btnRecoverLastCode').addEventListener('click', () => {
+        const lastTC = localStorage.getItem('last_transfer_code');
+        const lastCC = localStorage.getItem('last_conf_code');
+        
+        if (lastTC && lastCC) {
+            document.getElementById('transferCode').value = lastTC;
+            document.getElementById('confirmationCode').value = lastCC;
+            showNotification('已還原上次上傳成功的代碼！');
+        } else {
+            showNotification('未找到任何本地存檔代碼紀錄。', 'error');
         }
     });
 });

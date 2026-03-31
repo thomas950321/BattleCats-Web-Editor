@@ -20,17 +20,23 @@ class BCSFE_Service:
 
     async def login_and_fetch(self, transfer_code: str, confirmation_code: str, country_code: str, game_version: str):
         if transfer_code == "TEST" and confirmation_code == "0000":
-            save_path = core.Path.get_documents_folder().add("saves").add("SAVE_DATA")
-            if save_path.exists():
+            # 優先搜尋專案內的測試數據 (適用於雲端部署)
+            test_save_path = core.Path(os.path.join(current_dir, "test_data", "SAVE_DATA"))
+            # 退而求其次搜尋本地存檔路徑 (相容本地運行)
+            local_save_path = core.Path.get_documents_folder().add("saves").add("SAVE_DATA")
+            
+            target_path = test_save_path if test_save_path.exists() else local_save_path
+            
+            if target_path.exists():
                 try:
-                    data = save_path.read()
+                    data = target_path.read()
                     self.current_save = core.SaveFile(dt=data)
-                    self.server_handler = None  # 測試就不發送上傳/認證
-                    return True, "Loaded local test save"
+                    self.server_handler = None  # 模擬模式不連接伺服器
+                    return True, "模擬測試存檔已載入"
                 except Exception as e:
-                    return False, f"Failed to load TEST save: {str(e)}"
+                    return False, f"載入測試存檔失敗: {str(e)}"
             else:
-                return False, "Local SAVE_DATA backup not found for test"
+                return False, "未找到測試用的 SAVE_DATA 檔案 (請確認專案 test_data 目錄)"
 
         cc = core.CountryCode.from_code(country_code)
         gv = core.GameVersion.from_string(game_version)
@@ -46,12 +52,12 @@ class BCSFE_Service:
         )
         
         if server_handler is None:
-            return False, "Invalid codes or connection error"
+            return False, "無效的轉移碼或連線錯誤"
             
         self.server_handler = server_handler
         self.current_save = server_handler.save_file
 
-        return True, "Success"
+        return True, "成功"
 
     def get_talent_orbs_list(self):
         talent_orbs_list = []
@@ -115,8 +121,11 @@ class BCSFE_Service:
             
         max_vals = core.core_data.max_value_manager
 
+        # 基礎物資與貨幣
         if "catfood" in updates and updates["catfood"] is not None:
-            self.current_save.catfood = min(updates["catfood"], max_vals.get("catfood"))
+            # 貓罐頭強制上限 45,000 以維護安全
+            self.current_save.catfood = min(updates["catfood"], max_vals.get("catfood") or 45000)
+            
         if "xp" in updates and updates["xp"] is not None:
             self.current_save.xp = min(updates["xp"], max_vals.get("xp"))
         if "np" in updates and updates["np"] is not None:
@@ -133,7 +142,8 @@ class BCSFE_Service:
         if "legend_tickets" in updates and updates["legend_tickets"] is not None:
             self.current_save.legend_tickets = min(updates["legend_tickets"], max_vals.get("legend_tickets"))
         if "platinum_shards" in updates and updates["platinum_shards"] is not None:
-            self.current_save.platinum_shards = updates["platinum_shards"] # Shards limit is fine usually
+            # 白金碎片上限 99
+            self.current_save.platinum_shards = min(updates["platinum_shards"], 99)
             
         if "battle_items" in updates and updates["battle_items"]:
             max_val = max_vals.get("battle_items")
@@ -306,11 +316,17 @@ class BCSFE_Service:
     async def upload(self):
         if not self.server_handler:
             if self.current_save:
-                return {"transfer_code": "TEST-SUCCESS", "confirmation_code": "0000"}, "Success"
-            return None, "No active session"
+                # 模擬上傳成功
+                return {"transfer_code": "TEST-SUCCESS", "confirmation_code": "0000"}, "模擬上傳成功！"
+            return None, "目前無活動工作階段 (請重新登入)"
         codes = self.server_handler.get_codes()
         if codes:
-            return {"transfer_code": codes[0], "confirmation_code": codes[1]}, "Success"
-        return None, "Upload failed"
+            # 確保內容也會印在伺服器日誌中，防止重新整理遺失
+            print(f"\n[SUCCESS] 上傳成功！", flush=True)
+            print(f"新轉移碼 (Transfer Code): {codes[0]}", flush=True)
+            print(f"新認證碼 (Confirmation Code): {codes[1]}", flush=True)
+            print(f"請務必保存以上資訊，以免遺失。\n", flush=True)
+            return {"transfer_code": codes[0], "confirmation_code": codes[1]}, "成功"
+        return None, "上傳至遊戲伺服器失敗，請稍後再試"
 
 service = BCSFE_Service()

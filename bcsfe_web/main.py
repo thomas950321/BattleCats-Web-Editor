@@ -55,7 +55,7 @@ async def login(credentials: SaveLogin):
 async def get_save():
     data = service.get_save_data()
     if not data:
-        raise HTTPException(status_code=404, detail="Save not loaded")
+        raise HTTPException(status_code=404, detail="存檔未載入")
     return data
 
 @app.post("/save/patch")

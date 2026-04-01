@@ -30,13 +30,17 @@ class BCSFE_Service:
             if target_path.exists():
                 try:
                     data = target_path.read()
+                    # 模擬模式下，如果解析失敗，提供更詳細的錯誤資訊
                     self.current_save = core.SaveFile(dt=data)
                     self.server_handler = None  # 模擬模式不連接伺服器
                     return True, "模擬測試存檔已載入"
                 except Exception as e:
-                    return False, f"載入測試存檔失敗: {str(e)}"
+                    import traceback
+                    error_detail = traceback.format_exc()
+                    print(f"Simulation Load Error: {error_detail}", flush=True)
+                    return False, f"載入測試存檔失敗 (核心錯誤): {str(e)}"
             else:
-                return False, "未找到測試用的 SAVE_DATA 檔案 (請確認專案 test_data 目錄)"
+                return False, f"未找到測試用的 SAVE_DATA 檔案 (嘗試路徑: {target_path})"
 
         cc = core.CountryCode.from_code(country_code)
         gv = core.GameVersion.from_string(game_version)

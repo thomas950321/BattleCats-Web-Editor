@@ -107,6 +107,8 @@ from bcsfe.core.game.gamoto.gamatoto import (
     Gamatoto,
     GamatotoLevels,
     GamatotoMembersName,
+    Helper,
+    Helpers,
 )
 from bcsfe.core.game.gamoto.ototo import Ototo
 from bcsfe.core.game.localizable import Localizable
@@ -399,4 +401,6 @@ __all__ = [
     "CantDetectSaveCCError",
     "UnlockPopupData",
     "UnlockPopupLine",
+    "Helper",
+    "Helpers",
 ]

@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (lastTC && lastCC) {
             document.getElementById('transferCode').value = lastTC;
-            document.getElementById('confirmationCode').value = lastCC;
+            document.getElementById('confCode').value = lastCC;
             showNotification('已還原上次上傳成功的代碼！');
         } else {
             showNotification('未找到任何本地存檔代碼紀錄。', 'error');

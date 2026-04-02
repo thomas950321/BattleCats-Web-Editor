@@ -251,6 +251,24 @@
       background: var(--primary-dark);
     }
 
+    .btn-danger {
+      padding: 9px 18px;
+      border-radius: 7px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      background: var(--danger);
+      color: #fff;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
     .btn-success {
       background: var(--success);
       color: #fff;
@@ -476,14 +494,14 @@
     <main>
       <!-- 登入面板 -->
       <section id="login-panel" class="card">
-        <h2>引繼登入</h2>
+        <h2>帳號登入</h2>
         <div class="form-group">
-          <label for="transferCode">引繼碼 (Transfer Code)</label>
-          <input type="text" id="transferCode" placeholder="請輸入引繼碼">
+          <label for="transferCode">轉移號碼 (Transfer Code)</label>
+          <input type="text" id="transferCode" placeholder="請輸入轉移號碼">
         </div>
         <div class="form-group">
-          <label for="confCode">認證碼 (Confirmation Code)</label>
-          <input type="text" id="confCode" placeholder="請輸入認證碼">
+          <label for="confCode">認證號碼 (Confirmation Code)</label>
+          <input type="text" id="confCode" placeholder="請輸入認證號碼">
         </div>
         <div class="form-group row">
           <div class="field">
@@ -502,7 +520,7 @@
         </div>
         <div class="login-footer">
           <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
-          <button id="btnRecoverLastCode" class="btn-outline" style="margin-top: 10px; width: 100%;">找回上次上傳代碼 (防刷新)</button>
+          <button id="btnRecoverLastCode" class="btn-danger">找回上次上傳代碼 (防刷新)</button>
         </div>
       </section>
 

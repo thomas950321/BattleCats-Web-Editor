@@ -226,7 +226,7 @@ class BCSFE_Service:
         tech_opts = advanced.get("tech")
         if tech_opts and tech_opts.get("max_all_tech"):
             max_tech = core.Upgrade(base=30, plus=10)
-            for skill in self.current_save.special_skills.special_skills:
+            for skill in self.current_save.special_skills.skills:
                 skill.upgrade = max_tech
 
         prog_opts = advanced.get("progress")
@@ -254,7 +254,7 @@ class BCSFE_Service:
                     cat.set_form(3, self.current_save)
             if special_opts.get("max_tech_full"):
                 max_tech = core.Upgrade(base=30, plus=10)
-                for skill in self.current_save.special_skills.special_skills:
+                for skill in self.current_save.special_skills.skills:
                     skill.upgrade = max_tech
 
         return True
@@ -271,12 +271,12 @@ class BCSFE_Service:
                     self.current_save.story.chapters[i].clear_chapter()
                     
         if updates.get("clear_future"):
-            for i in range(3, 6):
+            for i in range(4, 7):
                 if i < len(self.current_save.story.chapters):
                     self.current_save.story.chapters[i].clear_chapter()
                     
         if updates.get("clear_cosmos"):
-            for i in range(6, 9):
+            for i in range(7, 10):
                 if i < len(self.current_save.story.chapters):
                     self.current_save.story.chapters[i].clear_chapter()
                 
@@ -292,29 +292,29 @@ class BCSFE_Service:
             for i in range(3):
                 if i < len(self.current_save.story.chapters):
                     chapter = self.current_save.story.chapters[i]
-                    if hasattr(chapter, "treasures") and chapter.treasures:
-                        chapter.treasures.set_all_superior()
+                    for stage in chapter.get_valid_treasure_stages():
+                        stage.set_treasure(2)
                         
         if updates.get("max_treasures_future"):
-            for i in range(3, 6):
+            for i in range(4, 7):
                 if i < len(self.current_save.story.chapters):
                     chapter = self.current_save.story.chapters[i]
-                    if hasattr(chapter, "treasures") and chapter.treasures:
-                        chapter.treasures.set_all_superior()
+                    for stage in chapter.get_valid_treasure_stages():
+                        stage.set_treasure(2)
 
         if updates.get("max_treasures_cosmos"):
-            for i in range(6, 9):
+            for i in range(7, 10):
                 if i < len(self.current_save.story.chapters):
                     chapter = self.current_save.story.chapters[i]
-                    if hasattr(chapter, "treasures") and chapter.treasures:
-                        chapter.treasures.set_all_superior()
-                
+                    for stage in chapter.get_valid_treasure_stages():
+                        stage.set_treasure(2)
+
         if updates.get("unlock_medals"):
             medal_names = core.core_data.get_medal_names(self.current_save)
             if medal_names and medal_names.medal_names:
                 for i in range(len(medal_names.medal_names)):
                     self.current_save.medals.add_medal(i)
-            
+
         return True
 
     async def upload(self):

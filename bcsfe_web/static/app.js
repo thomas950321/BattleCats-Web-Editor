@@ -108,6 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
+        
+        // 安全檢查：確保 data 是數組，避免流程崩潰
+        if (!Array.isArray(data)) {
+            console.warn(`[Render] ${prefix} 數據為空或非數組格式`);
+            data = [];
+        }
+
         const maxLimit = (prefix === '貓薄荷' || prefix === '本能玉') ? 998 : 9999;
         
         data.forEach((val, i) => {
@@ -188,12 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 generateGrid('labyrinthMedalsGrid', saveData.labyrinth_medals || [], '迷宮獎牌');
                 document.getElementById('playTime').value = saveData.play_time || 0;
 
-                // 動態生成素材列表
-                generateGrid('battle-items-grid', saveData.battle_items, '戰鬥道具');
+                // 動態生成素材列表 (增加安全回退值)
+                generateGrid('battle-items-grid', saveData.battle_items || [], '戰鬥道具');
                 generateGrid('catamins-grid', saveData.catamins || [], '喵力達');
-                generateGrid('catseyes-grid', saveData.catseyes, '貓眼石');
-                generateGrid('catfruit-grid', saveData.catfruit, '貓薄荷');
-                generateGrid('base-materials-grid', saveData.base_materials, '基地素材');
+                generateGrid('catseyes-grid', saveData.catseyes || [], '貓眼石');
+                generateGrid('catfruit-grid', saveData.catfruit || [], '貓薄荷');
+                generateGrid('base-materials-grid', saveData.base_materials || [], '基地素材');
 
                 document.getElementById('inquiryCodeDisplay').textContent = `ID: ${saveData.inquiry_code || 'N/A'}`;
             } else {

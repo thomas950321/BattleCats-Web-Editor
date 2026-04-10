@@ -69,23 +69,35 @@ class BCSFE_Service:
             from bcsfe.core.game.catbase.talent_orbs import OrbInfoList
             orb_info_list = OrbInfoList.create(self.current_save)
             if orb_info_list:
+                # 建立屬性分組字典
+                groups = {}
                 for i, orb in enumerate(orb_info_list.orb_info_list):
                     if not orb.target or orb.rank != "S":
-                        continue # 過濾無屬性對象的冗餘數據
+                        continue
                     
-                    print(f"DEBUG ORB: effect={orb.effect!r}, rank={orb.rank!r}, target={orb.target!r}", flush=True)
-                    effect_text = orb.effect.replace("%@", "{}")
-                    effect_text = effect_text.format(" S", orb.target or "")
+                    target = orb.target
+                    if target not in groups:
+                        groups[target] = {
+                            "name": f"全 S【{target}】本能珠",
+                            "amount": 0
+                        }
                     
-                    count = 0
+                    # 抓取目前存檔中的數量 (取該群組中第一個找到的數值作為代表)
                     if hasattr(self.current_save.talent_orbs, "orbs") and i in self.current_save.talent_orbs.orbs:
-                        count = self.current_save.talent_orbs.orbs[i].value
-                    
+                        if groups[target]["amount"] == 0:
+                            groups[target]["amount"] = self.current_save.talent_orbs.orbs[i].value
+
+                # 轉換為前端列表格式
+                for target, info in groups.items():
                     talent_orbs_list.append({
-                        "id": i,
-                        "name": effect_text,
-                        "amount": count
+                        "id": f"ATTR_{target}",
+                        "name": info["name"],
+                        "amount": info["amount"]
                     })
+                
+                # 按屬性名稱排序，確保顯示穩定
+                talent_orbs_list.sort(key=lambda x: x["name"])
+
         except Exception as e:
             print(f"Exception in get_talent_orbs_list: {e}", flush=True)
             import traceback
@@ -175,10 +187,25 @@ class BCSFE_Service:
                     materials[i].amount = min(val, max_val)
                     
         if "talent_orbs" in updates and updates["talent_orbs"]:
+            from bcsfe.core.game.catbase.talent_orbs import OrbInfoList
+            orb_info_list = OrbInfoList.create(self.current_save)
             max_val = max_vals.get("talent_orbs") or 998
-            for orb_id, val in updates["talent_orbs"].items():
-                if hasattr(self.current_save, "talent_orbs"):
-                    self.current_save.talent_orbs.set_orb(int(orb_id), min(val, max_val))
+            
+            for key, val in updates["talent_orbs"].items():
+                if isinstance(key, str) and key.startswith("ATTR_"):
+                    # 屬性分組處理
+                    target_attr = key.replace("ATTR_", "")
+                    for i, orb in enumerate(orb_info_list.orb_info_list):
+                        if orb.rank == "S" and orb.target == target_attr:
+                            if hasattr(self.current_save, "talent_orbs"):
+                                self.current_save.talent_orbs.set_orb(i, min(val, max_val))
+                else:
+                    # 原始 ID 處理 (相容性)
+                    if hasattr(self.current_save, "talent_orbs"):
+                        try:
+                            self.current_save.talent_orbs.set_orb(int(key), min(val, max_val))
+                        except (ValueError, TypeError):
+                            continue
                         
         if "labyrinth_medals" in updates and updates["labyrinth_medals"]:
             max_val = max_vals.get("labyrinth_medals")

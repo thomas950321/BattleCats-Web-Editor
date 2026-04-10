@@ -176,6 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const saveDataRes = await fetch('/save/get');
                 if (!saveDataRes.ok) throw new Error('無法獲取存檔詳細數據');
                 const saveData = await saveDataRes.json();
+                window.lastSaveData = JSON.parse(JSON.stringify(saveData)); // 拍攝初始快照
 
                 // 基礎物資
                 document.getElementById('catfood').value = saveData.catfood;
@@ -217,10 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 儲存並上傳
     btnUpload.addEventListener('click', async () => {
+        if (!window.lastSaveData) return;
         btnUpload.disabled = true;
-        btnUpload.textContent = '處理中...';
+        btnUpload.textContent = '計算差異中...';
 
-        // 輔助函式：抓取動態列表數值
         const getListValues = (selector) => {
             return Array.from(document.querySelectorAll(selector))
                 .sort((a, b) => a.dataset.index - b.dataset.index)
@@ -235,35 +236,62 @@ document.addEventListener('DOMContentLoaded', () => {
             return map;
         };
 
+        // 核心：比對差異 (Dirty Check)
+        const updates = {};
+        const currentItems = {
+            catfood: parseInt(document.getElementById('catfood').value) || 0,
+            xp: parseInt(document.getElementById('xp').value) || 0,
+            np: parseInt(document.getElementById('np').value) || 0,
+            leadership: parseInt(document.getElementById('leadership').value) || 0,
+            normal_tickets: parseInt(document.getElementById('normalTickets').value) || 0,
+            rare_tickets: parseInt(document.getElementById('rareTickets').value) || 0,
+            platinum_tickets: parseInt(document.getElementById('platinumTickets').value) || 0,
+            legend_tickets: parseInt(document.getElementById('legendTickets').value) || 0,
+            platinum_shards: parseInt(document.getElementById('platinumShards').value) || 0,
+            play_time: parseInt(document.getElementById('playTime').value) || 0
+        };
+
+        // 1. 比對基礎數值
+        for (const [key, val] of Object.entries(currentItems)) {
+            if (val !== window.lastSaveData[key]) {
+                updates[key] = val;
+            }
+        }
+
+        // 2. 比對列表類 (數組)
+        const listGrids = {
+            battle_items: '.戰鬥道具-input',
+            catamins: '.喵力達-input',
+            catseyes: '.貓眼石-input',
+            catfruit: '.貓薄荷-input',
+            base_materials: '.基地素材-input',
+            labyrinth_medals: '.迷宮獎牌-input'
+        };
+
+        for (const [key, selector] of Object.entries(listGrids)) {
+            const currentList = getListValues(selector);
+            const originalList = window.lastSaveData[key] || [];
+            if (JSON.stringify(currentList) !== JSON.stringify(originalList)) {
+                updates[key] = currentList;
+            }
+        }
+
+        // 3. 比對本能珠 (字典)
+        const currentOrbs = getListMap('.本能玉-input');
+        const originalOrbs = {};
+        (window.lastSaveData.talent_orbs || []).forEach(o => originalOrbs[o.id] = o.amount);
+        if (JSON.stringify(currentOrbs) !== JSON.stringify(originalOrbs)) {
+            updates.talent_orbs = currentOrbs;
+        }
+
         const payload = {
-            items: {
-                catfood: parseInt(document.getElementById('catfood').value) || 0,
-                xp: parseInt(document.getElementById('xp').value) || 0,
-                np: parseInt(document.getElementById('np').value) || 0,
-                leadership: parseInt(document.getElementById('leadership').value) || 0,
-                normal_tickets: parseInt(document.getElementById('normalTickets').value) || 0,
-                rare_tickets: parseInt(document.getElementById('rareTickets').value) || 0,
-                platinum_tickets: parseInt(document.getElementById('platinumTickets').value) || 0,
-                legend_tickets: parseInt(document.getElementById('legendTickets').value) || 0,
-                platinum_shards: parseInt(document.getElementById('platinumShards').value) || 0,
-                talent_orbs: getListMap('.本能玉-input'),
-                labyrinth_medals: getListValues('.迷宮獎牌-input'),
-                play_time: parseInt(document.getElementById('playTime').value) || 0,
-                // 動態列表
-                battle_items: getListValues('.戰鬥道具-input'),
-                catamins: getListValues('.喵力達-input'),
-                catseyes: getListValues('.貓眼石-input'),
-                catfruit: getListValues('.貓薄荷-input'),
-                base_materials: getListValues('.基地素材-input')
-            },
+            items: updates,
             stages: {
                 clear_tutorial: document.getElementById('clearTutorial').checked,
                 clear_world: document.getElementById('clearWorld').checked,
                 clear_future: document.getElementById('clearFuture').checked,
                 clear_cosmos: document.getElementById('clearCosmos').checked,
                 clear_aku: document.getElementById('clearAku').checked,
-                
-                // 新版主線進度
                 max_treasures_world: document.getElementById('advMaxTreasuresWorld').checked,
                 max_treasures_future: document.getElementById('advMaxTreasuresFuture').checked,
                 max_treasures_cosmos: document.getElementById('advMaxTreasuresCosmos').checked,

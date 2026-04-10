@@ -165,7 +165,7 @@ class BCSFE_Service:
         if "normal_tickets" in updates and updates["normal_tickets"] is not None:
             self.current_save.normal_tickets = self._clamp(updates["normal_tickets"], max_vals.get("normal_tickets"))
         if "rare_tickets" in updates and updates["rare_tickets"] is not None:
-            self.current_save.rare_tickets = self._clamp(updates["rare_tickets"], max_vals.get("rare_tickets"))
+            self.current_save.rare_tickets = self._clamp(updates["rare_tickets"], 299)
         if "platinum_tickets" in updates and updates["platinum_tickets"] is not None:
             self.current_save.platinum_tickets = self._clamp(updates["platinum_tickets"], max_vals.get("platinum_tickets"))
         if "legend_tickets" in updates and updates["legend_tickets"] is not None:

@@ -556,8 +556,8 @@
             </div>
             <div class="input-item">
               <label>統率力首領旗</label>
-              <input type="number" id="leadership" min="0" max="9999" placeholder="0">
-              <small class="tip">上限: 9,999</small>
+              <input type="number" id="leadership" min="0" max="999" placeholder="0">
+              <small class="tip">上限: 999</small>
             </div>
           </div>
 
@@ -566,13 +566,13 @@
           <div class="grid">
             <div class="input-item">
               <label>銀券 Normal</label>
-              <input type="number" id="normalTickets" min="0" max="2999" placeholder="0">
-              <small class="tip">上限: 2,999</small>
+              <input type="number" id="normalTickets" min="0" max="999" placeholder="0">
+              <small class="tip">上限: 999</small>
             </div>
             <div class="input-item">
               <label>金券 Rare</label>
-              <input type="number" id="rareTickets" min="0" max="299" placeholder="0">
-              <small class="tip">上限: 299</small>
+              <input type="number" id="rareTickets" min="0" max="999" placeholder="0">
+              <small class="tip">上限: 999</small>
             </div>
             <div class="input-item">
               <label>白金券</label>
@@ -666,13 +666,20 @@
             </div>
 
             <div class="adv-card">
-              <h4>科技與優化</h4>
-              <div class="list">
-                <label><input type="checkbox" id="advMaxTech"> 全部基礎科技 30</label>
-                <label><input type="checkbox" id="advMaxGamatoto"> 加碼多多 LV.130</label>
-                <label><input type="checkbox" id="advBestMembers"> 10 位白金帽隊員</label>
-              </div>
+              <div class="grid">
+            <div class="check-item">
+              <input type="checkbox" id="max_gamatoto">
+              <label for="max_gamatoto">加碼多多等級 130 + 滿經驗</label>
             </div>
+            <div class="check-item">
+              <input type="checkbox" id="best_gamatoto_members">
+              <label for="best_gamatoto_members">全隊員替換為【傳說級別】(10位)</label>
+            </div>
+            <div class="check-item">
+              <input type="checkbox" id="unlock_medals">
+              <label for="unlock_medals">解鎖全獎章 (Meow Medals)</label>
+            </div>
+          </div>
             <div class="adv-card" style="grid-column: 1 / -1;">
               <h4>其他參數設定</h4>
               <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">

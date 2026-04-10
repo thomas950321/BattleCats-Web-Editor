@@ -222,101 +222,101 @@ document.addEventListener('DOMContentLoaded', () => {
         btnUpload.disabled = true;
         btnUpload.textContent = '計算差異中...';
 
-        const getListValues = (selector) => {
-            return Array.from(document.querySelectorAll(selector))
-                .sort((a, b) => a.dataset.index - b.dataset.index)
-                .map(input => parseInt(input.value) || 0);
-        };
-
-        const getListMap = (selector) => {
-            const map = {};
-            document.querySelectorAll(selector).forEach(input => {
-                map[input.dataset.index] = parseInt(input.value) || 0;
-            });
-            return map;
-        };
-
-        // 核心：比對差異 (Dirty Check)
-        const updates = {};
-        const currentItems = {
-            catfood: parseInt(document.getElementById('catfood').value) || 0,
-            xp: parseInt(document.getElementById('xp').value) || 0,
-            np: parseInt(document.getElementById('np').value) || 0,
-            leadership: parseInt(document.getElementById('leadership').value) || 0,
-            normal_tickets: parseInt(document.getElementById('normalTickets').value) || 0,
-            rare_tickets: parseInt(document.getElementById('rareTickets').value) || 0,
-            platinum_tickets: parseInt(document.getElementById('platinumTickets').value) || 0,
-            legend_tickets: parseInt(document.getElementById('legendTickets').value) || 0,
-            platinum_shards: parseInt(document.getElementById('platinumShards').value) || 0,
-            play_time: parseInt(document.getElementById('playTime').value) || 0
-        };
-
-        // 1. 比對基礎數值
-        for (const [key, val] of Object.entries(currentItems)) {
-            if (val !== window.lastSaveData[key]) {
-                updates[key] = val;
-            }
-        }
-
-        // 2. 比對列表類 (數組)
-        const listGrids = {
-            battle_items: '.戰鬥道具-input',
-            catamins: '.喵力達-input',
-            catseyes: '.貓眼石-input',
-            catfruit: '.貓薄荷-input',
-            base_materials: '.基地素材-input',
-            labyrinth_medals: '.迷宮獎牌-input'
-        };
-
-        for (const [key, selector] of Object.entries(listGrids)) {
-            const currentList = getListValues(selector);
-            const originalList = window.lastSaveData[key] || [];
-            if (JSON.stringify(currentList) !== JSON.stringify(originalList)) {
-                updates[key] = currentList;
-            }
-        }
-
-        // 3. 比對本能珠 (字典)
-        const currentOrbs = getListMap('.本能玉-input');
-        const originalOrbs = {};
-        (window.lastSaveData.talent_orbs || []).forEach(o => originalOrbs[o.id] = o.amount);
-        if (JSON.stringify(currentOrbs) !== JSON.stringify(originalOrbs)) {
-            updates.talent_orbs = currentOrbs;
-        }
-
-        const payload = {
-            items: updates,
-            stages: {
-                clear_tutorial: document.getElementById('clearTutorial').checked,
-                clear_world: document.getElementById('clearWorld').checked,
-                clear_future: document.getElementById('clearFuture').checked,
-                clear_cosmos: document.getElementById('clearCosmos').checked,
-                clear_aku: document.getElementById('clearAku').checked,
-                max_treasures_world: document.getElementById('advMaxTreasuresWorld').checked,
-                max_treasures_future: document.getElementById('advMaxTreasuresFuture').checked,
-                max_treasures_cosmos: document.getElementById('advMaxTreasuresCosmos').checked,
-                unlock_medals: document.getElementById('advUnlockMedals').checked
-            },
-            advanced: {
-                cats: {
-                    unlock_all: document.getElementById('advUnlockAll').checked,
-                    max_level: document.getElementById('advMaxLevel').checked,
-                    true_form: document.getElementById('advTrueForm').checked,
-                    fourth_form: document.getElementById('advFourthForm').checked,
-                    max_talents: document.getElementById('advMaxTalents').checked
-                },
-                tech: {
-                    max_all_tech: document.getElementById('advMaxTech').checked
-                },
-                progress: {
-                    max_gamatoto: document.getElementById('advMaxGamatoto').checked,
-                    best_gamatoto_members: document.getElementById('advBestMembers').checked,
-                },
-            }
-        };
-
         try {
+            const getListValues = (selector) => {
+                return Array.from(document.querySelectorAll(selector))
+                    .sort((a, b) => a.dataset.index - b.dataset.index)
+                    .map(input => parseInt(input.value) || 0);
+            };
+
+            const getListMap = (selector) => {
+                const map = {};
+                document.querySelectorAll(selector).forEach(input => {
+                    map[input.dataset.index] = parseInt(input.value) || 0;
+                });
+                return map;
+            };
+
+            // 核心：比對差異 (Dirty Check)
+            const updates = {};
+            const itemIds = [
+                ['catfood', 'catfood'], ['xp', 'xp'], ['np', 'np'], 
+                ['leadership', 'leadership'], ['normalTickets', 'normal_tickets'], 
+                ['rareTickets', 'rare_tickets'], ['platinumTickets', 'platinum_tickets'], 
+                ['legendTickets', 'legend_tickets'], ['platinumShards', 'platinum_shards'], 
+                ['playTime', 'play_time']
+            ];
+
+            // 1. 比對基礎數值 (增加安全檢查)
+            itemIds.forEach(([domId, saveKey]) => {
+                const el = document.getElementById(domId);
+                if (el) {
+                    const val = parseInt(el.value) || 0;
+                    if (val !== window.lastSaveData[saveKey]) {
+                        updates[saveKey] = val;
+                    }
+                }
+            });
+
+            // 2. 比對列表類 (數組)
+            const listGrids = {
+                battle_items: '.戰鬥道具-input',
+                catamins: '.喵力達-input',
+                catseyes: '.貓眼石-input',
+                catfruit: '.貓薄荷-input',
+                base_materials: '.基地素材-input',
+                labyrinth_medals: '.迷宮獎牌-input'
+            };
+
+            for (const [key, selector] of Object.entries(listGrids)) {
+                const currentList = getListValues(selector);
+                const originalList = window.lastSaveData[key] || [];
+                if (JSON.stringify(currentList) !== JSON.stringify(originalList)) {
+                    updates[key] = currentList;
+                }
+            }
+
+            // 3. 比對本能珠 (字典)
+            const currentOrbs = getListMap('.本能玉-input');
+            const originalOrbs = {};
+            (window.lastSaveData.talent_orbs || []).forEach(o => originalOrbs[o.id] = o.amount);
+            if (JSON.stringify(currentOrbs) !== JSON.stringify(originalOrbs)) {
+                updates.talent_orbs = currentOrbs;
+            }
+
+            const payload = {
+                items: updates,
+                stages: {
+                    clear_tutorial: document.getElementById('clearTutorial')?.checked || false,
+                    clear_world: document.getElementById('clearWorld')?.checked || false,
+                    clear_future: document.getElementById('clearFuture')?.checked || false,
+                    clear_cosmos: document.getElementById('clearCosmos')?.checked || false,
+                    clear_aku: document.getElementById('clearAku')?.checked || false,
+                    max_treasures_world: document.getElementById('advMaxTreasuresWorld')?.checked || false,
+                    max_treasures_future: document.getElementById('advMaxTreasuresFuture')?.checked || false,
+                    max_treasures_cosmos: document.getElementById('advMaxTreasuresCosmos')?.checked || false,
+                    unlock_medals: document.getElementById('advUnlockMedals')?.checked || false
+                },
+                advanced: {
+                    cats: {
+                        unlock_all: document.getElementById('advUnlockAll')?.checked || false,
+                        max_level: document.getElementById('advMaxLevel')?.checked || false,
+                        true_form: document.getElementById('advTrueForm')?.checked || false,
+                        fourth_form: document.getElementById('advFourthForm')?.checked || false,
+                        max_talents: document.getElementById('advMaxTalents')?.checked || false
+                    },
+                    tech: {
+                        max_all_tech: document.getElementById('advMaxTech')?.checked || false
+                    },
+                    progress: {
+                        max_gamatoto: document.getElementById('advMaxGamatoto')?.checked || false,
+                        best_gamatoto_members: document.getElementById('advBestMembers')?.checked || false,
+                    },
+                }
+            };
+
             // 第一步：套用修改
+            btnUpload.textContent = '正在通訊...';
             const patchResp = await fetch('/save/patch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

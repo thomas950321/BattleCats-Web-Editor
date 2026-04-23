@@ -70,7 +70,7 @@ class SaveDataResponse(BaseModel):
     catseyes: List[int]
     catfruit: List[int]
     base_materials: List[int]
-    talent_orbs: int
+    talent_orbs: List[Dict]
     labyrinth_medals: List[int]
     event_lucky_tickets: int
     play_time: int

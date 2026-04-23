@@ -36,9 +36,19 @@ jobs:
           git checkout main
           
           echo ">>> Attempting to merge upstream/main..."
-          # 使用 -X theirs 在發生衝突時，優先保留作者的代碼 (針對核心功能更新)
-          # 但你的 bcsfe_web 資料夾因為作者沒有，所以不會被覆蓋，非常安全。
+          # 先記住合併前的狀態
+          PRE_MERGE_SHA=$(git rev-parse HEAD)
+          
+          # 執行合併
           git merge upstream/main -m "chore: sync with upstream (fieryhenry)" --allow-unrelated-histories -X theirs
+          
+          echo ">>> Restoring original README.md..."
+          # 從合併前的 SHA 中單獨抓回 README.md
+          git checkout $PRE_MERGE_SHA -- README.md
+          
+          # 提交還原後的 README.md (如果沒變動會自動跳過)
+          git add README.md
+          git commit --amend --no-edit || echo "No changes to README.md to restore"
           
           echo ">>> Pushing changes to origin..."
           git push origin main

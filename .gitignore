@@ -3,7 +3,9 @@
 __pychache__
 *.pyc
 /tests/saves/*
-.*
+!.github/
+!.gitignore
+# .* (移除這行，避免忽略 GitHub Actions 設定)
 *.egg*
 src/bcsfe/files/game_data
 src/bcsfe/files/map_names

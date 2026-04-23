@@ -5,6 +5,9 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write # 賦予寫入權限，解決 403 錯誤
+
 jobs:
   sync:
     runs-on: ubuntu-latest

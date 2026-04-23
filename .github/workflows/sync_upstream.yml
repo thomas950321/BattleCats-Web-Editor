@@ -35,7 +35,7 @@ jobs:
           echo ">>> Attempting to merge upstream/main..."
           # 使用 -X theirs 在發生衝突時，優先保留作者的代碼 (針對核心功能更新)
           # 但你的 bcsfe_web 資料夾因為作者沒有，所以不會被覆蓋，非常安全。
-          git merge upstream/main -m "chore: sync with upstream (fieryhenry)" --allow-unrelated-histories
+          git merge upstream/main -m "chore: sync with upstream (fieryhenry)" --allow-unrelated-histories -X theirs
           
           echo ">>> Pushing changes to origin..."
           git push origin main

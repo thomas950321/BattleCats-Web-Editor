@@ -2,15 +2,15 @@ name: Sync Upstream
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天凌晨 0 點自動執行 (UTC)
-  workflow_dispatch:      # 允許你在 GitHub Actions 頁面手動點擊執行
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # 升級到 v4 解決 Node.js 警告
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -20,16 +20,22 @@ jobs:
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'actions@github.com'
           
-          # 新增上游倉庫
+          echo ">>> Adding upstream remote..."
           git remote add upstream https://github.com/fieryhenry/BCSFE-Python.git
+          
+          echo ">>> Fetching from upstream..."
           git fetch upstream
           
-          # 切換到你的主分支
+          echo ">>> List of branches for debugging:"
+          git branch -a
+          
+          echo ">>> Switching to main branch..."
           git checkout main
           
-          # 合併作者的 main 分支 (該專案使用的是 main)
-          # 使用 --no-edit 自動完成 commit 訊息，--allow-unrelated-histories 以防萬一
+          echo ">>> Attempting to merge upstream/main..."
+          # 使用 -X theirs 在發生衝突時，優先保留作者的代碼 (針對核心功能更新)
+          # 但你的 bcsfe_web 資料夾因為作者沒有，所以不會被覆蓋，非常安全。
           git merge upstream/main -m "chore: sync with upstream (fieryhenry)" --allow-unrelated-histories
           
-          # 推送到你自己的倉庫
+          echo ">>> Pushing changes to origin..."
           git push origin main

@@ -19,6 +19,14 @@ def main():
         "--input-path", "-i", type=str, help="input path to save file to edit"
     )
     parser.add_argument(
+        "--game-data-dir", "-g", type=str, help="path to store the game data to"
+    )
+    parser.add_argument(
+        "--transfer-backup-path",
+        type=str,
+        help="path to save the backup SAVE_DATA after transfering to",
+    )
+    parser.add_argument(
         "--config-path",
         "-c",
         type=str,
@@ -43,6 +51,12 @@ def main():
 
     if args.log_path is not None:
         core.set_log_path(core.Path(args.log_path))
+
+    if args.transfer_backup_path is not None:
+        core.set_transfer_backup_path(core.Path(args.transfer_backup_path))
+
+    if args.game_data_dir is not None:
+        core.set_game_data_path(core.Path(args.game_data_dir))
 
     core.core_data.init_data()
 

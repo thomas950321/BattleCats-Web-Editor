@@ -1,11 +1,9 @@
 *SAVE_DATA*
-!bcsfe_web/test_data/SAVE_DATA
 /dist
 __pychache__
 *.pyc
 /tests/saves/*
 .*
-!.github/
 *.egg*
 src/bcsfe/files/game_data
 src/bcsfe/files/map_names

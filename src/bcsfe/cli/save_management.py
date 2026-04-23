@@ -27,7 +27,11 @@ class SaveManagement:
         if save_file.save_path is None:
             return
 
-        save_file.to_file(save_file.save_path)
+        try:
+            save_file.to_file(save_file.save_path)
+        except OSError as e:
+            print(e)
+            return
 
         color.ColoredText.localize("save_success", path=save_file.save_path)
 
@@ -359,7 +363,7 @@ class SaveManagement:
             "load_from_documents",
             "adb_pull_save",
             "load_save_data_json",
-            "load_recent_saves",
+            # "load_recent_saves",
             # "create_new_save",
         ]
         if starting_options:
@@ -465,13 +469,13 @@ class SaveManagement:
                 save_path, cc = data
             else:
                 save_path = None
-        elif choice == 5:
-            recent_save = recent_saves.RecentSaves.read_default().select()
-            if recent_save is None:
-                save_path = None
-            else:
-                save_path = recent_save.path
-                cc = recent_save.cc
+        # elif choice == 5:
+        #     recent_save = recent_saves.RecentSaves.read_default().select()
+        #     if recent_save is None:
+        #         save_path = None
+        #     else:
+        #         save_path = recent_save.path
+        #         cc = recent_save.cc
 
         # elif choice == 5:
         #     color.ColoredText.localize("create_new_save_warning")
@@ -494,11 +498,11 @@ class SaveManagement:
         #     save.to_file(save_path)
         #     color.ColoredText.localize("create_new_save_success")
 
-        elif choice == 6 and starting_options:
+        elif choice == 5 and starting_options:
             core.core_data.config.edit_config()
-        elif choice == 7 and starting_options:
+        elif choice == 6 and starting_options:
             core.update_external_content()
-        elif choice == 8 and starting_options:
+        elif choice == 7 and starting_options:
             main.Main.exit_editor(check_temp=False)
 
         if save_path is None or not save_path.exists():
@@ -577,7 +581,10 @@ class SaveManagement:
 
         save_file.save_path = save_path
         backup_path = save_file.get_default_path()
-        save_file.save_path.copy_thread(backup_path)
+        try:
+            save_file.save_path.copy_thread(backup_path)
+        except Exception as e:
+            print(e)
         save_file.used_storage = used_storage
 
         return save_file, backup_path

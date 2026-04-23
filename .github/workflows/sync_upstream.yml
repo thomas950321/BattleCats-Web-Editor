@@ -27,9 +27,9 @@ jobs:
           # 切換到你的主分支
           git checkout main
           
-          # 合併作者的 master 分支 (該專案使用的是 master)
+          # 合併作者的 main 分支 (該專案使用的是 main)
           # 使用 --no-edit 自動完成 commit 訊息，--allow-unrelated-histories 以防萬一
-          git merge upstream/master -m "chore: sync with upstream (fieryhenry)" --allow-unrelated-histories
+          git merge upstream/main -m "chore: sync with upstream (fieryhenry)" --allow-unrelated-histories
           
           # 推送到你自己的倉庫
           git push origin main

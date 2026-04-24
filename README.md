@@ -1,4 +1,13 @@
-# 🐈 Battle Cats Web Editor | 貓咪大戰爭網頁存檔修改器
+---
+title: Battlecats Web Editor
+emoji: 🐱
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
+# 🐱 Battle Cats Web Editor | 貓咪大戰爭網頁修改器
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/thomas950321/BattleCats-Web-Editor?style=for-the-badge)
 ![GitHub license](https://img.shields.io/github/license/thomas950321/BattleCats-Web-Editor?style=for-the-badge)

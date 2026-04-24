@@ -9,18 +9,14 @@ jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
 
       - name: Push to HF Space
-        # 使用 Hugging Face 官方提供的同步工具
-        uses: huggingface/github-sync-action@v2
-        with:
-          github_repo_id: thomas950321/BattleCats-Web-Editor
-          huggingface_repo_id: thomas950321/battlecats-editor
-          repo_type: space
-          sync_branch: main
-          hf_token: ${{ secrets.HF_TOKEN }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add hf https://thomas950321:$HF_TOKEN@huggingface.co/spaces/thomas950321/battlecats-editor
+          git push --force hf main

@@ -14,22 +14,23 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Clean up binary files and push
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Hugging Face Hub
+        run: pip install -U huggingface_hub
+
+      - name: Push to HF Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          echo ">>> Setting up Git config..."
-          git config --global user.name "GitHub Action Bot"
-          git config --global user.email "actions@github.com"
-          
-          echo ">>> Removing binary files from sync (not needed for web version)..."
-          # 從 Git 追蹤中暫時移除 adb.exe，避免觸發 HF 的檢查
-          # 我們只在虛擬機器裡做這件事，不會影響你 GitHub 上的原始檔案
-          find . -name "*.exe" -type f -delete
-          find . -name "*.bin" -type f -delete
-          git add .
-          git commit -m "chore: prune binaries for web deployment" || echo "No binaries found to prune"
-          
-          echo ">>> Pushing to Hugging Face..."
-          git remote add hf https://thomas950321:${HF_TOKEN}@huggingface.co/spaces/thomas950321/battlecats-editor
-          git push --force hf HEAD:main
+          # 使用 API 模式直接上傳，徹底繞過 Git 對二進位檔 (adb.exe) 的限制
+          python -m huggingface_hub.commands.huggingface_cli upload \
+            thomas950321/battlecats-editor \
+            . \
+            . \
+            --repo-type=space \
+            --token $HF_TOKEN \
+            --commit-message "Sync from GitHub via API (Bypassing Git limits)"

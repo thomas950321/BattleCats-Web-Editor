@@ -19,18 +19,25 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Hugging Face Hub
+      - name: Install dependencies
         run: pip install -U huggingface_hub
 
-      - name: Push to HF Space
+      - name: Sync to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # 使用 API 模式直接上傳，徹底繞過 Git 對二進位檔 (adb.exe) 的限制
-          python -m huggingface_hub.commands.huggingface_cli upload \
-            thomas950321/battlecats-editor \
-            . \
-            . \
-            --repo-type=space \
-            --token $HF_TOKEN \
-            --commit-message "Sync from GitHub via API (Bypassing Git limits)"
+          python -c "
+          import os
+          from huggingface_hub import HfApi
+          
+          api = HfApi(token=os.environ['HF_TOKEN'])
+          # 直接呼叫官方 API 上傳整個資料夾，這能完美繞過所有 Git 限制
+          print('>>> Starting upload to Hugging Face Spaces...')
+          api.upload_folder(
+              folder_path='.',
+              repo_id='thomas950321/battlecats-editor',
+              repo_type='space',
+              commit_message='Sync from GitHub via official API'
+          )
+          print('>>> Upload successful!')
+          "

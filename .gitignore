@@ -1,7 +1,8 @@
-*SAVE_DATA*
+# *SAVE_DATA* (移除這行，否則範例檔會被擋住)
 /dist
-__pychache__
+__pycache__
 *.pyc
+!bcsfe_web/test_data/SAVE_DATA
 /tests/saves/*
 !.github/
 !.gitignore

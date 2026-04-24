@@ -23,32 +23,32 @@ jobs:
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'actions@github.com'
           
-          echo ">>> Adding upstream remote..."
+          # 加入原作者遠端
           git remote add upstream https://github.com/fieryhenry/BCSFE-Python.git
+          git fetch upstream main
           
-          echo ">>> Fetching from upstream..."
-          git fetch upstream
+          # 檢查是否有來自原作者的更新
+          UPSTREAM_CHANGES=$(git rev-list HEAD..upstream/main --count)
           
-          echo ">>> List of branches for debugging:"
-          git branch -a
+          if [ "$UPSTREAM_CHANGES" -eq "0" ]; then
+            echo ">>> No new changes from upstream. Skipping sync."
+            exit 0
+          fi
           
-          echo ">>> Switching to main branch..."
-          git checkout main
+          echo ">>> Found $UPSTREAM_CHANGES new commits from upstream. Proceeding to merge..."
           
-          echo ">>> Attempting to merge upstream/main..."
-          # 先記住合併前的狀態
-          PRE_MERGE_SHA=$(git rev-parse HEAD)
+          # 備份目前的 README.md
+          cp README.md README.md.bak
           
-          # 執行合併
+          # 執行合併 (使用 -X theirs 確保代碼邏輯更新)
           git merge upstream/main -m "chore: sync with upstream (fieryhenry)" --allow-unrelated-histories -X theirs
           
-          echo ">>> Restoring original README.md..."
-          # 從合併前的 SHA 中單獨抓回 README.md
-          git checkout $PRE_MERGE_SHA -- README.md
-          
-          # 提交還原後的 README.md (如果沒變動會自動跳過)
+          # 還原你的自訂 README.md
+          mv README.md.bak README.md
           git add README.md
-          git commit --amend --no-edit || echo "No changes to README.md to restore"
+          
+          # 只有在 README.md 真的被改動時才建立第二筆提交紀錄
+          git commit -m "chore: restore custom README.md after sync" || echo "README.md already matched"
           
           echo ">>> Pushing changes to origin..."
           git push origin main

@@ -1,0 +1,27 @@
+name: Sync to Hugging Face hub
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # 建議使用 v4 最新版
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to HF Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # 設定 Git 使用者名稱以免推失敗
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "actions@github.com"
+          
+          # 將目前程式碼強制推送到 Hugging Face Space
+          git push --force https://thomas950321:${HF_TOKEN}@huggingface.co/spaces/thomas950321/battlecats-editor main

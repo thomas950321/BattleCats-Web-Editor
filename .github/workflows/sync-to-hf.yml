@@ -14,9 +14,17 @@ jobs:
           fetch-depth: 0
           lfs: true
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Hugging Face Hub
+        run: pip install huggingface_hub
+
       - name: Push to HF Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add hf https://thomas950321:$HF_TOKEN@huggingface.co/spaces/thomas950321/battlecats-editor
-          git push --force hf main
+          # 使用官方 CLI 上傳整包檔案，這能繞過 Git 對二進位檔 (adb.exe) 的限制
+          huggingface-cli upload thomas950321/battlecats-editor . . --repo-type=space --token $HF_TOKEN --commit-message "Sync from GitHub"

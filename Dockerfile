@@ -18,10 +18,10 @@ COPY . .
 
 # 設定環境變數，確保 Python 能找到模組
 ENV PYTHONPATH=/app
-ENV PORT=8000
+ENV PORT=7860
 
 # 暴露連接埠
-EXPOSE 8000
+EXPOSE 7860
 
 # 啟動指令
 CMD ["python", "bcsfe_web/main.py"]

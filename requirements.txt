@@ -5,3 +5,8 @@ PyYAML==6.0.2
 Requests==2.32.4
 beautifulsoup4==4.13.4
 argparse==1.4.0
+# Web dependencies
+fastapi==0.115.0
+uvicorn==0.30.6
+pydantic==2.9.2
+python-multipart==0.0.12

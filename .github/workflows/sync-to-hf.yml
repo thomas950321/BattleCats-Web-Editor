@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # 建議使用 v4 最新版
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
@@ -18,10 +18,20 @@ jobs:
       - name: Push to HF Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         run: |
-          # 設定 Git 使用者名稱以免推失敗
+          echo ">>> Setting up Git config..."
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           
-          # 將目前程式碼強制推送到 Hugging Face Space
-          git push --force https://thomas950321:${HF_TOKEN}@huggingface.co/spaces/thomas950321/battlecats-editor main
+          echo ">>> Adding Hugging Face remote..."
+          # 建立一個臨時遠端
+          git remote add hf https://thomas950321:${HF_TOKEN}@huggingface.co/spaces/thomas950321/battlecats-editor
+          
+          echo ">>> Current local branches:"
+          git branch
+          
+          echo ">>> Pushing to Hugging Face..."
+          # 強制將本地的 main (或是當前的 HEAD) 推送到遠端的 main 分支
+          git push hf HEAD:main --force
+

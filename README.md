@@ -43,9 +43,7 @@ pinned: false
 
 ## 🛠️ 開發與部署 (Deployment)
 
-- LinYuAn for Traditional Chinese localization
-
-### Themes
+如果你想在本地執行此專案：
 
 1.  **複製專案：**
     ```bash

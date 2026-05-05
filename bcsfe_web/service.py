@@ -337,21 +337,21 @@ class BCSFE_Service:
                 if i < len(self.current_save.story.chapters):
                     chapter = self.current_save.story.chapters[i]
                     for stage in chapter.get_valid_treasure_stages():
-                        stage.set_treasure(2)
+                        stage.set_treasure(3)
                         
         if updates.get("max_treasures_future"):
             for i in range(4, 7):
                 if i < len(self.current_save.story.chapters):
                     chapter = self.current_save.story.chapters[i]
                     for stage in chapter.get_valid_treasure_stages():
-                        stage.set_treasure(2)
+                        stage.set_treasure(3)
 
         if updates.get("max_treasures_cosmos"):
             for i in range(7, 10):
                 if i < len(self.current_save.story.chapters):
                     chapter = self.current_save.story.chapters[i]
                     for stage in chapter.get_valid_treasure_stages():
-                        stage.set_treasure(2)
+                        stage.set_treasure(3)
 
         if updates.get("unlock_medals"):
             medal_names = core.core_data.get_medal_names(self.current_save)

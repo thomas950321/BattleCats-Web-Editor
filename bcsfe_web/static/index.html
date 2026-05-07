@@ -479,6 +479,22 @@
       background: var(--warn);
     }
 
+    .saved-inquiry {
+      background: #fffbea;
+      border: 1px solid #f0c040;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+
+    .saved-inquiry-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #8a6500;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -495,6 +511,17 @@
       <!-- 登入面板 -->
       <section id="login-panel" class="card">
         <h2>帳號登入</h2>
+
+        <!-- 上次保存的帳號 ID（複製後自動顯示） -->
+        <div id="savedInquirySection" class="saved-inquiry hidden">
+          <span class="saved-inquiry-label">📌 上次保存的帳號 ID</span>
+          <div class="code-copy" style="margin-top:6px;">
+            <span id="savedInquiryCode" class="code-text" style="font-size:13px;"></span>
+            <button class="btn-copy" id="btnCopySavedInquiry">複製</button>
+          </div>
+          <small class="tip" style="margin-top:4px;">此為上次使用「複製帳號 ID」按鈕時記錄的帳號，重整後仍可查閱。</small>
+        </div>
+
         <div class="form-group">
           <label for="transferCode">轉移號碼 (Transfer Code)</label>
           <input type="text" id="transferCode" placeholder="請輸入轉移號碼">
@@ -528,6 +555,7 @@
       <section id="dashboard" class="hidden">
         <div class="toolbar">
           <span id="inquiryCodeDisplay">ID: -----</span>
+          <button id="btnCopyInquiry" class="btn-copy" title="複製帳號 ID">📋 複製帳號 ID</button>
           <button id="btnUpload" class="btn-success">儲存並上傳至伺服器</button>
           <div class="tabs">
             <button class="tab-btn active" data-tab="items">道具修改</button>

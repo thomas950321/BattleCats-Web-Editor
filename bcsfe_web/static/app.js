@@ -1,14 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // ── 頁面載入時，顯示上次保存的帳號 ID ──────────────────────────
+    (function restoreSavedInquiry() {
+        const saved = localStorage.getItem('last_inquiry_code');
+        if (!saved) return;
+        const container = document.getElementById('savedInquirySection');
+        const display  = document.getElementById('savedInquiryCode');
+        if (container && display) {
+            display.textContent = saved;
+            container.classList.remove('hidden');
+        }
+        // 綁定登入頁的複製按鈕
+        const btnCopy = document.getElementById('btnCopySavedInquiry');
+        if (btnCopy) {
+            btnCopy.addEventListener('click', () => {
+                navigator.clipboard.writeText(saved).then(() => {
+                    btnCopy.textContent = '✅ 已複製！';
+                    setTimeout(() => { btnCopy.textContent = '複製'; }, 2000);
+                });
+            });
+        }
+    })();
     // 元素引用
     const loginPanel = document.getElementById('login-panel');
     const dashboard = document.getElementById('dashboard');
     const resultPanel = document.getElementById('result-panel');
     const btnLogin = document.getElementById('btnLogin');
     const btnUpload = document.getElementById('btnUpload');
+    const btnCopyInquiry = document.getElementById('btnCopyInquiry');
     const btnRestart = document.getElementById('btnRestart');
     const notification = document.getElementById('notification');
     const resTransferCode = document.getElementById('resTransferCode');
     const resConfCode = document.getElementById('resConfCode');
+    const inquiryCodeDisplay = document.getElementById('inquiryCodeDisplay');
 
     // 狀態切換 - 通知
     function showNotification(message, type = 'success') {
@@ -370,5 +393,31 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             showNotification('未找到任何本地存檔代碼紀錄。', 'error');
         }
+    });
+
+    // 複製帳號 ID（同時存入 localStorage 讓頁面重整後仍可查閱）
+    btnCopyInquiry.addEventListener('click', () => {
+        const raw = inquiryCodeDisplay.textContent || '';
+        const code = raw.replace(/^ID:\s*/, '').trim();
+        if (!code || code === '-----' || code === 'N/A') {
+            showNotification('尚未登入，無帳號 ID 可複製', 'error');
+            return;
+        }
+        // 寫入 localStorage
+        localStorage.setItem('last_inquiry_code', code);
+        // 即時更新登入頁面的顯示區塊
+        const container = document.getElementById('savedInquirySection');
+        const display   = document.getElementById('savedInquiryCode');
+        if (container && display) {
+            display.textContent = code;
+            container.classList.remove('hidden');
+        }
+        navigator.clipboard.writeText(code).then(() => {
+            showNotification(`帳號 ID 已複製並儲存：${code}`, 'success');
+            btnCopyInquiry.textContent = '✅ 已複製！';
+            setTimeout(() => { btnCopyInquiry.textContent = '📋 複製帳號 ID'; }, 2000);
+        }).catch(() => {
+            showNotification('複製失敗，請手動選取', 'error');
+        });
     });
 });

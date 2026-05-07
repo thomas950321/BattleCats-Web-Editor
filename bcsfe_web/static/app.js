@@ -400,25 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 複製帳號 ID
-    const btnCopyInquiry = document.getElementById('btnCopyInquiry');
-    if (btnCopyInquiry) {
-        btnCopyInquiry.addEventListener('click', () => {
-            const raw = inquiryCodeDisplay.textContent || '';
-            const code = raw.replace(/^ID:\s*/, '').trim();
-            if (!code || code === '-----' || code === 'N/A') {
-                showNotification('尚未登入，無帳號 ID 可複製', 'error');
-                return;
-            }
-            navigator.clipboard.writeText(code).then(() => {
-                showNotification(`帳號 ID 已複製：${code}`, 'success');
-                btnCopyInquiry.textContent = '已複製！';
-                setTimeout(() => { btnCopyInquiry.textContent = '複製帳號 ID'; }, 2000);
-            }).catch(() => {
-                showNotification('複製失敗，請手動選取', 'error');
-            });
-        });
-    }
+
 
     // 移植帳號按鈕
     const btnTransplant = document.getElementById('btnTransplant');

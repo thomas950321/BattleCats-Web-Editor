@@ -21,18 +21,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const labelCC = document.getElementById('labelNewCC');
         if (isTransplant) {
             if (resultTitle)  resultTitle.textContent  = '移植成功！';
-            if (resultWarning) resultWarning.textContent = '空殼帳號已注入強帳進度，以下是新的引繼代碼。';
+            if (resultWarning) resultWarning.textContent = '空殼帳號已注入強帳進度，以下是新的轉移號碼。';
             if (origSection)  origSection.classList.add('hidden');
             if (cloneLabel)   cloneLabel.classList.add('hidden');
-            if (labelTC)      labelTC.textContent = '引繼碼 (Transfer Code)';
-            if (labelCC)      labelCC.textContent = '認證碼 (Confirmation Code)';
+            if (labelTC)      labelTC.textContent = '轉移號碼 (Transfer Code)';
+            if (labelCC)      labelCC.textContent = '認證號碼 (Confirmation Code)';
         } else {
             if (resultTitle)  resultTitle.textContent  = '存檔上傳成功！';
-            if (resultWarning) resultWarning.textContent = '請務必記下並妥善保存下列資訊，原有的引繼碼已失效。';
+            if (resultWarning) resultWarning.textContent = '請務必記下並妥善保存下列資訊，原有的轉移號碼已失效。';
             if (origSection)  origSection.classList.add('hidden');
             if (cloneLabel)   cloneLabel.classList.add('hidden');
-            if (labelTC)      labelTC.textContent = '新引繼碼 (New Transfer Code)';
-            if (labelCC)      labelCC.textContent = '新認證碼 (New Confirmation Code)';
+            if (labelTC)      labelTC.textContent = '新轉移號碼 (New Transfer Code)';
+            if (labelCC)      labelCC.textContent = '新認證號碼 (New Confirmation Code)';
         }
     }
 
@@ -71,60 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
-
-    // 複製帳號（完整複製：兩次登入+兩次上傳）
-    btnClone.addEventListener('click', async () => {
-        const transferCode = document.getElementById('transferCode').value.trim();
-        const confCode     = document.getElementById('confCode').value.trim();
-        const countryCode  = document.getElementById('countryCode').value;
-        const gameVersion  = document.getElementById('gameVersion').value.trim();
-
-        if (!transferCode || !confCode) {
-            showNotification('請先輸入引繼碼與認證碼', 'error');
-            return;
-        }
-
-        btnClone.disabled = true;
-        btnClone.textContent = '🔄 複製中（約需 15–30 秒）...';
-
-        try {
-            // 一個請求搞定：後端執行兩次登入+兩次上傳
-            const res = await fetch('/save/clone', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    transfer_code: transferCode,
-                    confirmation_code: confCode,
-                    country_code: countryCode,
-                    game_version: gameVersion
-                })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || '複製失敗');
-
-            // 存入 localStorage（以原帳新代碼為主）
-            localStorage.setItem('last_transfer_code', data.original_transfer_code);
-            localStorage.setItem('last_conf_code',     data.original_confirmation_code);
-
-            // 設定複製模式，填入兩組代碼
-            setResultMode(true);
-            origTransferCode.textContent = data.original_transfer_code;
-            origConfCode.textContent     = data.original_confirmation_code;
-            resTransferCode.textContent  = data.clone_transfer_code;
-            resConfCode.textContent      = data.clone_confirmation_code;
-
-            loginPanel.classList.add('hidden');
-            resultPanel.classList.remove('hidden');
-            showNotification('複製完成！兩組帳密已顯示。', 'success');
-
-        } catch (err) {
-            showNotification(err.message || '複製失敗', 'error');
-        } finally {
-            btnClone.disabled = false;
-            btnClone.textContent = '🐱 複製帳號（一鍵產生兩組帳密）';
-        }
-    });
-
 
     // 返回登入時，重置結果面板到一般模式
     btnRestart.addEventListener('click', () => {
@@ -235,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (!payload.transfer_code || !payload.confirmation_code) {
-            showNotification('請輸入完整的引擬資訊', 'error');
+            showNotification('請輸入完整的轉移號碼資訊', 'error');
             btnLogin.disabled = false;
             btnLogin.textContent = '下載並讀取存檔';
             return;
@@ -454,85 +400,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 複製帳號 ID（同時存入 localStorage 讓頁面重整後仍可查閱）
-    btnCopyInquiry.addEventListener('click', () => {
-        const raw = inquiryCodeDisplay.textContent || '';
-        const code = raw.replace(/^ID:\s*/, '').trim();
-        if (!code || code === '-----' || code === 'N/A') {
-            showNotification('尚未登入，無帳號 ID 可複製', 'error');
-            return;
-        }
-        // 寫入 localStorage
-        localStorage.setItem('last_inquiry_code', code);
-        // 即時更新登入頁面的顯示區塊
-        const container = document.getElementById('savedInquirySection');
-        const display   = document.getElementById('savedInquiryCode');
-        if (container && display) {
-            display.textContent = code;
-            container.classList.remove('hidden');
-        }
-        navigator.clipboard.writeText(code).then(() => {
-            showNotification(`帳號 ID 已複製並儲存：${code}`, 'success');
-            btnCopyInquiry.textContent = '✅ 已複製！';
-            setTimeout(() => { btnCopyInquiry.textContent = '📋 複製帳號 ID'; }, 2000);
-        }).catch(() => {
-            showNotification('複製失敗，請手動選取', 'error');
+    // 複製帳號 ID
+    const btnCopyInquiry = document.getElementById('btnCopyInquiry');
+    if (btnCopyInquiry) {
+        btnCopyInquiry.addEventListener('click', () => {
+            const raw = inquiryCodeDisplay.textContent || '';
+            const code = raw.replace(/^ID:\s*/, '').trim();
+            if (!code || code === '-----' || code === 'N/A') {
+                showNotification('尚未登入，無帳號 ID 可複製', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification(`帳號 ID 已複製：${code}`, 'success');
+                btnCopyInquiry.textContent = '已複製！';
+                setTimeout(() => { btnCopyInquiry.textContent = '複製帳號 ID'; }, 2000);
+            }).catch(() => {
+                showNotification('複製失敗，請手動選取', 'error');
+            });
         });
-    });
+    }
 
     // 移植帳號按鈕
-    document.getElementById('btnTransplant').addEventListener('click', async () => {
-        const srcTC = document.getElementById('srcTC').value.trim();
-        const srcCC = document.getElementById('srcCC').value.trim();
-        const dstTC = document.getElementById('dstTC').value.trim();
-        const dstCC = document.getElementById('dstCC').value.trim();
-        const cc    = document.getElementById('countryCode').value;
-        const gv    = document.getElementById('gameVersion').value.trim();
+    const btnTransplant = document.getElementById('btnTransplant');
+    if (btnTransplant) {
+        btnTransplant.addEventListener('click', async () => {
+            const srcTC = document.getElementById('srcTC').value.trim();
+            const srcCC = document.getElementById('srcCC').value.trim();
+            const dstTC = document.getElementById('dstTC').value.trim();
+            const dstCC = document.getElementById('dstCC').value.trim();
+            const cc    = document.getElementById('countryCode').value;
+            const gv    = document.getElementById('gameVersion').value.trim();
 
-        if (!srcTC || !srcCC || !dstTC || !dstCC) {
-            showNotification('請填寫來源帳與目標帳的完整代碼', 'error');
-            return;
-        }
+            if (!srcTC || !srcCC || !dstTC || !dstCC) {
+                showNotification('請填寫來源帳與目標帳的完整代碼', 'error');
+                return;
+            }
 
-        const btn = document.getElementById('btnTransplant');
-        btn.disabled = true;
-        btn.textContent = '🔄 移植中（約需 20–40 秒）...';
+            btnTransplant.disabled = true;
+            btnTransplant.textContent = '移植中...';
 
-        try {
-            const res = await fetch('/save/transplant', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    source_transfer_code: srcTC,
-                    source_confirmation_code: srcCC,
-                    target_transfer_code: dstTC,
-                    target_confirmation_code: dstCC,
-                    country_code: cc,
-                    game_version: gv,
-                })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || '移植失敗');
+            try {
+                const res = await fetch('/save/transplant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source_transfer_code: srcTC,
+                        source_confirmation_code: srcCC,
+                        target_transfer_code: dstTC,
+                        target_confirmation_code: dstCC,
+                        country_code: cc,
+                        game_version: gv,
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || '移植失敗');
 
-            localStorage.setItem('last_transfer_code', data.new_transfer_code);
-            localStorage.setItem('last_conf_code',     data.new_confirmation_code);
+                localStorage.setItem('last_transfer_code', data.new_transfer_code);
+                localStorage.setItem('last_conf_code',     data.new_confirmation_code);
 
-            // 一般模式：只顯示目標帳的新代碼（移植成功）
-            setResultMode(false);
-            document.getElementById('resultTitle').textContent   = '移植成功！';
-            document.getElementById('resultWarning').textContent = '空殼帳號已注入強帳進度，以下是新的引繼代碼。';
-            resTransferCode.textContent = data.new_transfer_code;
-            resConfCode.textContent     = data.new_confirmation_code;
+                // 一般模式：只顯示目標帳的新代碼（移植成功）
+                setResultMode(false);
+                document.getElementById('resultTitle').textContent   = '移植成功！';
+                document.getElementById('resultWarning').textContent = '空殼帳號已注入強帳進度，以下是新的轉移號碼。';
+                resTransferCode.textContent = data.new_transfer_code;
+                resConfCode.textContent     = data.new_confirmation_code;
 
-            loginPanel.classList.add('hidden');
-            resultPanel.classList.remove('hidden');
-            showNotification('移植完成！空殼帳現在擁有強帳進度。', 'success');
+                loginPanel.classList.add('hidden');
+                resultPanel.classList.remove('hidden');
+                showNotification('移植完成！空殼帳現在擁有強帳進度。', 'success');
 
-        } catch (err) {
-            showNotification(err.message || '移植失敗', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = '🚀 開始移植';
-        }
-    });
+            } catch (err) {
+                showNotification(err.message || '移植失敗', 'error');
+            } finally {
+                btnTransplant.disabled = false;
+                btnTransplant.textContent = '開始移植';
+            }
+        });
+    }
 });

@@ -539,107 +539,6 @@
       background: var(--border);
     }
 
-    .btn-clone {
-      width: 100%;
-      padding: 11px 18px;
-      border-radius: 7px;
-      border: 2px dashed #3a7bd5;
-      background: #f0f6ff;
-      color: var(--primary);
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s;
-      letter-spacing: 0.3px;
-    }
-    .btn-clone:hover {
-      background: var(--primary);
-      color: #fff;
-      border-style: solid;
-    }
-    .btn-clone:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .result-account-block {
-      background: #fafbfc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-    .result-account-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--label);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-
-    /* 移植區塊樣式 */
-    .section-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 20px 0 16px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .section-divider::before,
-    .section-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-    .transplant-header {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--label);
-      margin-bottom: 12px;
-    }
-    .transplant-section {
-      background: #fafbfc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-    }
-    .transplant-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--label);
-      margin-bottom: 10px;
-    }
-    .transplant-hint {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 14px;
-      line-height: 1.6;
-    }
-
-    /* 按鈕統一風格 */
-    .btn-secondary {
-      width: 100%;
-      padding: 9px 18px;
-      border-radius: 7px;
-      border: 1px solid var(--border);
-      background: var(--input-bg);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--label);
-      cursor: pointer;
-      transition: all 0.15s;
-      margin-top: 8px;
-    }
-    .btn-secondary:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: #f0f6ff;
-    }
-
     .hidden {
       display: none !important;
     }
@@ -682,34 +581,34 @@
           </div>
         </div>
         <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
-        <button id="btnRecoverLastCode" class="btn-secondary">🔄 找回上次上傳代碼</button>
+        <button id="btnRecoverLastCode" class="btn-secondary">找回上次上傳代碼</button>
 
         <!-- 移植帳號 -->
         <div class="section-divider"><span>移植帳號</span></div>
         <p class="transplant-hint">移植後，空殼帳號將擁有強帳的完整進度，且 Inquiry Code 保持不同，完全獨立。</p>
         <div class="transplant-section">
-          <div class="transplant-label">💪 來源帳（強帳）</div>
+          <div class="transplant-label">來源帳（強帳）</div>
           <div class="form-group">
-            <label for="srcTC">引繼碼</label>
-            <input type="text" id="srcTC" placeholder="來源帳引繼碼">
+            <label for="srcTC">轉移號碼</label>
+            <input type="text" id="srcTC" placeholder="來源帳轉移號碼">
           </div>
           <div class="form-group">
-            <label for="srcCC">認證碼</label>
-            <input type="text" id="srcCC" placeholder="來源帳認證碼">
+            <label for="srcCC">認證號碼</label>
+            <input type="text" id="srcCC" placeholder="來源帳認證號碼">
           </div>
         </div>
         <div class="transplant-section">
-          <div class="transplant-label">🐣 目標帳（空殼）</div>
+          <div class="transplant-label">目標帳（空殼）</div>
           <div class="form-group">
-            <label for="dstTC">引繼碼</label>
-            <input type="text" id="dstTC" placeholder="空殼帳引繼碼">
+            <label for="dstTC">轉移號碼</label>
+            <input type="text" id="dstTC" placeholder="空殼帳轉移號碼">
           </div>
           <div class="form-group">
-            <label for="dstCC">認證碼</label>
-            <input type="text" id="dstCC" placeholder="空殼帳認證碼">
+            <label for="dstCC">認證號碼</label>
+            <input type="text" id="dstCC" placeholder="空殼帳認證號碼">
           </div>
         </div>
-        <button id="btnTransplant" class="btn-primary">🚀 開始移植</button>
+        <button id="btnTransplant" class="btn-primary">開始移植</button>
 
       </section>
 
@@ -717,7 +616,7 @@
       <section id="dashboard" class="hidden">
         <div class="toolbar">
           <span id="inquiryCodeDisplay">ID: -----</span>
-          <button id="btnCopyInquiry" class="btn-copy" title="複製帳號 ID">📋 複製帳號 ID</button>
+          <button id="btnCopyInquiry" class="btn-copy" title="複製帳號 ID">複製帳號 ID</button>
           <button id="btnUpload" class="btn-success">儲存並上傳至伺服器</button>
           <div class="tabs">
             <button class="tab-btn active" data-tab="items">道具修改</button>
@@ -820,7 +719,7 @@
 
         <!-- 進階功能 -->
         <section id="advanced" class="tab-content card hidden">
-          <h3>進階批次修改 🚀</h3>
+          <h3>進階批次修改</h3>
           <div class="advanced-grid">
 
             <div class="adv-card">
@@ -884,24 +783,23 @@
       <!-- 上傳結果面板 -->
       <section id="result-panel" class="card hidden">
         <div class="success-header">
-          <div class="icon-check">✔</div>
           <h2 id="resultTitle">存檔上傳成功！</h2>
         </div>
-        <p class="warning-text" id="resultWarning">請務必記下並妥善保存下列資訊，原有的引繼碼已失效。</p>
+        <p class="warning-text" id="resultWarning">請務必記下並妥善保存下列資訊，原有的轉移號碼已失效。</p>
 
         <!-- 原帳區塊（只在複製模式顯示） -->
         <div id="originalAccountSection" class="result-account-block hidden">
-          <div class="result-account-label">🔑 原帳（你輸入的代碼）</div>
+          <div class="result-account-label">原帳（你輸入的代碼）</div>
           <div class="result-box" style="margin-top:8px;">
             <div class="result-item">
-              <label>引繼碼 (Transfer Code)</label>
+              <label>轉移號碼 (Transfer Code)</label>
               <div class="code-copy">
                 <span id="origTransferCode" class="code-text">-----</span>
                 <button class="btn-copy" data-target="origTransferCode">複製</button>
               </div>
             </div>
             <div class="result-item">
-              <label>認證碼 (Confirmation Code)</label>
+              <label>認證號碼 (Confirmation Code)</label>
               <div class="code-copy">
                 <span id="origConfCode" class="code-text">-----</span>
                 <button class="btn-copy" data-target="origConfCode">複製</button>
@@ -912,17 +810,17 @@
 
         <!-- 複製帳 / 一般上傳結果 -->
         <div id="cloneAccountSection">
-          <div id="cloneAccountLabel" class="result-account-label hidden">📋 複製帳（新產生的代碼）</div>
+          <div id="cloneAccountLabel" class="result-account-label hidden">複製帳（新產生的代碼）</div>
           <div class="result-box" style="margin-top:8px;">
             <div class="result-item">
-              <label id="labelNewTC">新引繼碼 (New Transfer Code)</label>
+              <label id="labelNewTC">新轉移號碼 (New Transfer Code)</label>
               <div class="code-copy">
                 <span id="resTransferCode" class="code-text">-----</span>
                 <button class="btn-copy" data-target="resTransferCode">複製</button>
               </div>
             </div>
             <div class="result-item">
-              <label id="labelNewCC">新認證碼 (New Confirmation Code)</label>
+              <label id="labelNewCC">新認證號碼 (New Confirmation Code)</label>
               <div class="code-copy">
                 <span id="resConfCode" class="code-text">-----</span>
                 <button class="btn-copy" data-target="resConfCode">複製</button>

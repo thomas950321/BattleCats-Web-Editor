@@ -429,4 +429,89 @@ class BCSFE_Service:
             "clone_confirmation_code":    codes2["confirmation_code"],
         }, "成功"
 
+    async def transplant_account(
+        self,
+        source_tc: str, source_cc: str,
+        target_tc: str, target_cc: str,
+        country_code: str, game_version: str,
+    ):
+        """
+        移植帳號：
+        1. 登入來源帳，匯出進度 dict
+        2. 登入目標帳（空殼），匯出身份識別 dict
+        3. 將進度欄位從來源覆蓋到目標 dict
+        4. 從合併後的 dict 重建 SaveFile，上傳
+        """
+        # 進度欄位（從來源複製過來）
+        PROGRESS_FIELDS = [
+            "cats", "story", "event_stages", "item_reward_stages",
+            "timed_score_stages", "ex_stages", "uncanny", "catamin_stages",
+            "legend_quest", "aku", "zero_legends", "dojo", "dojo_chapters",
+            "tower", "challenge", "gauntlets", "collab_gauntlets",
+            "enigma_clears", "enigma", "behemoth_culling",
+            "catfood", "xp", "normal_tickets", "rare_tickets",
+            "platinum_tickets", "legend_tickets", "np", "platinum_shards",
+            "leadership", "hundred_million_ticket", "catfruit", "catseyes",
+            "catamins", "lucky_tickets", "battle_items", "talent_orbs",
+            "scheme_items", "treasure_chests", "special_skills",
+            "user_rank_rewards", "combo_unlocks", "combo_unlocked_10k_ur",
+            "gamatoto", "ototo", "logins", "missions", "cat_shrine",
+            "gatya", "event_capsules", "event_capsules_counter",
+            "event_capsules_2", "medals", "outbreaks", "map_resets",
+            "cleared_slots", "cleared_eoc_1", "itf1_complete", "itf1_ending",
+            "cotc_1_complete", "unlocked_ending", "enemy_guide", "unit_drops",
+            "stamp_data", "officer_pass", "wildcat_slots", "cat_scratcher",
+            "beacon_base", "item_pack", "labyrinth_medals", "dojo_3x_speed",
+        ]
+        # 身份識別欄位（保留目標帳的值）
+        IDENTITY_FIELDS = [
+            "inquiry_code", "transfer_code", "confirmation_code",
+            "transfer_flag", "password_refresh_token", "player_id",
+            "has_account", "backup_state", "order_ids",
+            "g_timestamp", "g_servertimestamp", "m_gettimesave",
+            "g_timestamp_2", "g_servertimestamp_2", "m_gettimesave_2",
+            "m_dGetTimeSave2", "m_dGetTimeSave3", "unknown_timestamp",
+            "usl1", "full_gameversion", "energy_notification",
+        ]
+
+        # ── Step 1：登入來源帳 ─────────────────────────────────────────
+        success, msg = await self.login_and_fetch(
+            source_tc, source_cc, country_code, game_version
+        )
+        if not success:
+            return None, f"來源帳登入失敗：{msg}"
+        source_dict = self.current_save.to_dict()
+
+        # ── Step 2：登入目標帳（空殼） ────────────────────────────────
+        success, msg = await self.login_and_fetch(
+            target_tc, target_cc, country_code, game_version
+        )
+        if not success:
+            return None, f"目標帳登入失敗：{msg}"
+        target_dict = self.current_save.to_dict()
+
+        # ── Step 3：合併 dict（進度覆蓋，身份保留） ──────────────────
+        merged = dict(target_dict)  # 從目標帳開始
+        for field in PROGRESS_FIELDS:
+            if field in source_dict:
+                merged[field] = source_dict[field]
+        # 確保身份識別欄位仍是目標帳的值
+        for field in IDENTITY_FIELDS:
+            if field in target_dict:
+                merged[field] = target_dict[field]
+
+        # ── Step 4：從合併 dict 重建 SaveFile ────────────────────────
+        from bcsfe.core.io.save import SaveFile
+        self.current_save = SaveFile.from_dict(merged, warn=False)
+
+        # ── Step 5：上傳目標帳 ────────────────────────────────────────
+        codes, msg_up = await self.upload()
+        if not codes:
+            return None, f"上傳失敗：{msg_up}"
+
+        return {
+            "new_transfer_code":    codes["transfer_code"],
+            "new_confirmation_code": codes["confirmation_code"],
+        }, "成功"
+
 service = BCSFE_Service()

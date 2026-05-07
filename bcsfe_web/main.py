@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
-from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest
+from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest, TransplantRequest
 from bcsfe_web.service import service
 import uvicorn
 import os
@@ -96,6 +96,25 @@ async def clone_save(credentials: SaveLogin):
     if not result:
         raise HTTPException(status_code=400, detail=message)
     return {"status": "success", **result}
+@app.post("/save/transplant")
+async def transplant_save(req: TransplantRequest):
+    """
+    移植帳號：把來源帳的進度移植到目標帳（空殼），保留目標帳的 Inquiry Code。
+    回傳目標帳上傳後的新引繼碼。
+    """
+    result, message = await service.transplant_account(
+        req.source_transfer_code, req.source_confirmation_code,
+        req.target_transfer_code, req.target_confirmation_code,
+        req.country_code, req.game_version,
+    )
+    if not result:
+        raise HTTPException(status_code=400, detail=message)
+    return {
+        "status": "success",
+        "new_transfer_code":    result["new_transfer_code"],
+        "new_confirmation_code": result["new_confirmation_code"],
+    }
+
 
 if __name__ == "__main__":
     # Render 會自動提供 PORT 環境變數

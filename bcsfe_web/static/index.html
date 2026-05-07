@@ -479,6 +479,50 @@
       background: var(--warn);
     }
 
+    details#transplantDetails {
+      margin-top: 0;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    details#transplantDetails summary {
+      padding: 12px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      list-style: none;
+      user-select: none;
+      background: #f5f8ff;
+    }
+    details#transplantDetails summary:hover {
+      background: #e8f0fe;
+    }
+    details#transplantDetails[open] summary {
+      border-bottom: 1px solid var(--border);
+    }
+    .transplant-box {
+      padding: 14px;
+    }
+    .transplant-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+    .transplant-section {
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .transplant-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--label);
+      margin-bottom: 10px;
+    }
+
     .clone-divider {
       display: flex;
       align-items: center;
@@ -609,6 +653,39 @@
         </div>
         <button id="btnClone" class="btn-clone">🐱 複製帳號（一鍵產生兩組帳密）</button>
         <small class="tip" style="margin-top:6px;display:block;text-align:center;">直接登入並上傳，同時顯示原帳與複製帳的代碼。</small>
+
+        <!-- 移植帳號（進階） -->
+        <div class="clone-divider"><span>或</span></div>
+        <details id="transplantDetails">
+          <summary id="transplantSummary">🔀 移植帳號（把強帳進度移植到獨立空殼）</summary>
+          <div class="transplant-box">
+            <p class="transplant-hint">移植後，空殼帳號將擁有強帳的完整進度，且 Inquiry Code 保持不同，完全獨立。</p>
+            <div class="transplant-section">
+              <div class="transplant-label">💪 來源帳（強帳）</div>
+              <div class="form-group">
+                <label for="srcTC">引繼碼</label>
+                <input type="text" id="srcTC" placeholder="來源帳引繼碼">
+              </div>
+              <div class="form-group">
+                <label for="srcCC">認證碼</label>
+                <input type="text" id="srcCC" placeholder="來源帳認證碼">
+              </div>
+            </div>
+            <div class="transplant-section" style="margin-top:12px;">
+              <div class="transplant-label">🐣 目標帳（空殼）</div>
+              <div class="form-group">
+                <label for="dstTC">引繼碼</label>
+                <input type="text" id="dstTC" placeholder="空殼帳引繼碼">
+              </div>
+              <div class="form-group">
+                <label for="dstCC">認證碼</label>
+                <input type="text" id="dstCC" placeholder="空殼帳認證碼">
+              </div>
+            </div>
+            <button id="btnTransplant" class="btn-primary" style="margin-top:14px;">🚀 開始移植</button>
+          </div>
+        </details>
+
       </section>
 
       <!-- 修改儀表板 -->

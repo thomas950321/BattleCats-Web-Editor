@@ -515,4 +515,60 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification('複製失敗，請手動選取', 'error');
         });
     });
+
+    // 移植帳號按鈕
+    document.getElementById('btnTransplant').addEventListener('click', async () => {
+        const srcTC = document.getElementById('srcTC').value.trim();
+        const srcCC = document.getElementById('srcCC').value.trim();
+        const dstTC = document.getElementById('dstTC').value.trim();
+        const dstCC = document.getElementById('dstCC').value.trim();
+        const cc    = document.getElementById('countryCode').value;
+        const gv    = document.getElementById('gameVersion').value.trim();
+
+        if (!srcTC || !srcCC || !dstTC || !dstCC) {
+            showNotification('請填寫來源帳與目標帳的完整代碼', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btnTransplant');
+        btn.disabled = true;
+        btn.textContent = '🔄 移植中（約需 20–40 秒）...';
+
+        try {
+            const res = await fetch('/save/transplant', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    source_transfer_code: srcTC,
+                    source_confirmation_code: srcCC,
+                    target_transfer_code: dstTC,
+                    target_confirmation_code: dstCC,
+                    country_code: cc,
+                    game_version: gv,
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || '移植失敗');
+
+            localStorage.setItem('last_transfer_code', data.new_transfer_code);
+            localStorage.setItem('last_conf_code',     data.new_confirmation_code);
+
+            // 一般模式：只顯示目標帳的新代碼（移植成功）
+            setResultMode(false);
+            document.getElementById('resultTitle').textContent   = '移植成功！';
+            document.getElementById('resultWarning').textContent = '空殼帳號已注入強帳進度，以下是新的引繼代碼。';
+            resTransferCode.textContent = data.new_transfer_code;
+            resConfCode.textContent     = data.new_confirmation_code;
+
+            loginPanel.classList.add('hidden');
+            resultPanel.classList.remove('hidden');
+            showNotification('移植完成！空殼帳現在擁有強帳進度。', 'success');
+
+        } catch (err) {
+            showNotification(err.message || '移植失敗', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🚀 開始移植';
+        }
+    });
 });

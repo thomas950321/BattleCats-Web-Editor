@@ -436,13 +436,16 @@ class BCSFE_Service:
         country_code: str, game_version: str,
     ):
         """
-        移植帳號：
-        1. 登入來源帳，匯出進度 dict
-        2. 登入目標帳（空殼），匯出身份識別 dict
-        3. 將進度欄位從來源覆蓋到目標 dict
-        4. 從合併後的 dict 重建 SaveFile，上傳
+        移植帳號（使用 deepcopy 策略，與 transplant_save.py 一致）：
+        1. 登入來源帳，取得進度物件
+        2. 登入目標帳（空殼），備份身份識別欄位
+        3. 用 deepcopy 把進度欄位複製到目標帳物件
+        4. 還原目標帳的身份識別欄位
+        5. 上傳目標帳
         """
-        # 進度欄位（從來源複製過來）
+        import copy
+
+        # 進度欄位（從來源複製）
         PROGRESS_FIELDS = [
             "cats", "story", "event_stages", "item_reward_stages",
             "timed_score_stages", "ex_stages", "uncanny", "catamin_stages",
@@ -463,7 +466,7 @@ class BCSFE_Service:
             "stamp_data", "officer_pass", "wildcat_slots", "cat_scratcher",
             "beacon_base", "item_pack", "labyrinth_medals", "dojo_3x_speed",
         ]
-        # 身份識別欄位（保留目標帳的值）
+        # 身份識別欄位（保留目標帳）
         IDENTITY_FIELDS = [
             "inquiry_code", "transfer_code", "confirmation_code",
             "transfer_flag", "password_refresh_token", "player_id",
@@ -480,7 +483,7 @@ class BCSFE_Service:
         )
         if not success:
             return None, f"來源帳登入失敗：{msg}"
-        source_dict = self.current_save.to_dict()
+        source_save = self.current_save
 
         # ── Step 2：登入目標帳（空殼） ────────────────────────────────
         success, msg = await self.login_and_fetch(
@@ -488,29 +491,35 @@ class BCSFE_Service:
         )
         if not success:
             return None, f"目標帳登入失敗：{msg}"
-        target_dict = self.current_save.to_dict()
+        target_save = self.current_save
 
-        # ── Step 3：合併 dict（進度覆蓋，身份保留） ──────────────────
-        merged = dict(target_dict)  # 從目標帳開始
-        for field in PROGRESS_FIELDS:
-            if field in source_dict:
-                merged[field] = source_dict[field]
-        # 確保身份識別欄位仍是目標帳的值
+        # ── Step 3：備份目標帳身份識別 ────────────────────────────────
+        identity_backup = {}
         for field in IDENTITY_FIELDS:
-            if field in target_dict:
-                merged[field] = target_dict[field]
+            if hasattr(target_save, field):
+                identity_backup[field] = copy.deepcopy(getattr(target_save, field))
 
-        # ── Step 4：從合併 dict 重建 SaveFile ────────────────────────
-        from bcsfe.core.io.save import SaveFile
-        self.current_save = SaveFile.from_dict(merged, warn=False)
+        # ── Step 4：把進度欄位從來源 deepcopy 到目標 ──────────────────
+        for field in PROGRESS_FIELDS:
+            if hasattr(source_save, field):
+                try:
+                    setattr(target_save, field, copy.deepcopy(getattr(source_save, field)))
+                except Exception as e:
+                    print(f"[transplant] skip field '{field}': {e}", flush=True)
 
-        # ── Step 5：上傳目標帳 ────────────────────────────────────────
+        # ── Step 5：還原目標帳身份識別 ────────────────────────────────
+        for field, val in identity_backup.items():
+            setattr(target_save, field, val)
+
+        self.current_save = target_save
+
+        # ── Step 6：上傳目標帳 ────────────────────────────────────────
         codes, msg_up = await self.upload()
         if not codes:
             return None, f"上傳失敗：{msg_up}"
 
         return {
-            "new_transfer_code":    codes["transfer_code"],
+            "new_transfer_code":     codes["transfer_code"],
             "new_confirmation_code": codes["confirmation_code"],
         }, "成功"
 

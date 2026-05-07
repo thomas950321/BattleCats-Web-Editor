@@ -539,6 +539,68 @@
       background: var(--border);
     }
 
+    /* 移植區塊樣式 */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .transplant-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--label);
+      margin-bottom: 12px;
+    }
+    .transplant-section {
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .transplant-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--label);
+      margin-bottom: 10px;
+    }
+    .transplant-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    /* 按鈕統一風格 */
+    .btn-secondary {
+      width: 100%;
+      padding: 9px 18px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--label);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 8px;
+    }
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f0f6ff;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -581,7 +643,7 @@
           </div>
         </div>
         <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
-        <button id="btnRecoverLastCode" class="btn-secondary">找回上次上傳代碼</button>
+        <button id="btnRecoverLastCode" class="btn-danger">找回上次上傳代碼</button>
 
         <!-- 移植帳號 -->
         <div class="section-divider"><span>移植帳號</span></div>

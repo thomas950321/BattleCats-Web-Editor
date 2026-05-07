@@ -1,77 +1,41 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ── 頁面載入時，顯示上次保存的帳號 ID ──────────────────────────
-    (function restoreSavedInquiry() {
-        const saved = localStorage.getItem('last_inquiry_code');
-        if (!saved) return;
-        const container = document.getElementById('savedInquirySection');
-        const display  = document.getElementById('savedInquiryCode');
-        if (container && display) {
-            display.textContent = saved;
-            container.classList.remove('hidden');
-        }
-        // 綁定登入頁的複製按鈕
-        const btnCopy = document.getElementById('btnCopySavedInquiry');
-        if (btnCopy) {
-            btnCopy.addEventListener('click', () => {
-                navigator.clipboard.writeText(saved).then(() => {
-                    btnCopy.textContent = '✅ 已複製！';
-                    setTimeout(() => { btnCopy.textContent = '複製'; }, 2000);
-                });
-            });
-        }
-    })();
-
-    // ── 頁面載入時，自動填回上次的引繼碼（讓「返回登入頁面」後免手動輸入）──
-    (function autoFillLastCodes() {
-        const lastTC = localStorage.getItem('last_transfer_code');
-        const lastCC = localStorage.getItem('last_conf_code');
-        if (!lastTC || !lastCC) return;
-        const tcEl = document.getElementById('transferCode');
-        const ccEl = document.getElementById('confCode');
-        if (tcEl) tcEl.value = lastTC;
-        if (ccEl) ccEl.value = lastCC;
-    })();
     // 元素引用
     const loginPanel = document.getElementById('login-panel');
     const dashboard = document.getElementById('dashboard');
     const resultPanel = document.getElementById('result-panel');
     const btnLogin = document.getElementById('btnLogin');
-    const btnClone = document.getElementById('btnClone');
     const btnUpload = document.getElementById('btnUpload');
-    const btnCopyInquiry = document.getElementById('btnCopyInquiry');
     const btnRestart = document.getElementById('btnRestart');
     const notification = document.getElementById('notification');
     const resTransferCode = document.getElementById('resTransferCode');
     const resConfCode = document.getElementById('resConfCode');
     const inquiryCodeDisplay = document.getElementById('inquiryCodeDisplay');
-    // 用於顯示結果面板的元素
     const resultTitle = document.getElementById('resultTitle');
     const resultWarning = document.getElementById('resultWarning');
-    const originalAccountSection = document.getElementById('originalAccountSection');
-    const cloneAccountLabel = document.getElementById('cloneAccountLabel');
-    const origTransferCode = document.getElementById('origTransferCode');
-    const origConfCode = document.getElementById('origConfCode');
-    const labelNewTC = document.getElementById('labelNewTC');
-    const labelNewCC = document.getElementById('labelNewCC');
 
-    // 輿模式切換：重置結果面板為普通上傳模式
-    function setResultMode(isClone) {
-        if (isClone) {
-            resultTitle.textContent = '帳號複製成功！';
-            resultWarning.textContent = '請妥善保存以下兩組代碼，原帳与複製帳均可登入遊戲。';
-            originalAccountSection.classList.remove('hidden');
-            cloneAccountLabel.classList.remove('hidden');
-            labelNewTC.textContent = '引繼碼 (Transfer Code)';
-            labelNewCC.textContent = '認證碼 (Confirmation Code)';
+    // 結果面板模式切換
+    function setResultMode(isTransplant) {
+        const origSection = document.getElementById('originalAccountSection');
+        const cloneLabel  = document.getElementById('cloneAccountLabel');
+        const labelTC = document.getElementById('labelNewTC');
+        const labelCC = document.getElementById('labelNewCC');
+        if (isTransplant) {
+            if (resultTitle)  resultTitle.textContent  = '移植成功！';
+            if (resultWarning) resultWarning.textContent = '空殼帳號已注入強帳進度，以下是新的引繼代碼。';
+            if (origSection)  origSection.classList.add('hidden');
+            if (cloneLabel)   cloneLabel.classList.add('hidden');
+            if (labelTC)      labelTC.textContent = '引繼碼 (Transfer Code)';
+            if (labelCC)      labelCC.textContent = '認證碼 (Confirmation Code)';
         } else {
-            resultTitle.textContent = '存檔上傳成功！';
-            resultWarning.textContent = '請務必記下並妥善保存下列資訊，原有的引繼碼已失效。';
-            originalAccountSection.classList.add('hidden');
-            cloneAccountLabel.classList.add('hidden');
-            labelNewTC.textContent = '新引繼碼 (New Transfer Code)';
-            labelNewCC.textContent = '新認證碼 (New Confirmation Code)';
+            if (resultTitle)  resultTitle.textContent  = '存檔上傳成功！';
+            if (resultWarning) resultWarning.textContent = '請務必記下並妥善保存下列資訊，原有的引繼碼已失效。';
+            if (origSection)  origSection.classList.add('hidden');
+            if (cloneLabel)   cloneLabel.classList.add('hidden');
+            if (labelTC)      labelTC.textContent = '新引繼碼 (New Transfer Code)';
+            if (labelCC)      labelCC.textContent = '新認證碼 (New Confirmation Code)';
         }
     }
+
 
     // 狀態切換 - 通知
     function showNotification(message, type = 'success') {

@@ -578,20 +578,66 @@
       margin-bottom: 6px;
     }
 
-    .saved-inquiry {
-      background: #fffbea;
-      border: 1px solid #f0c040;
+    /* 移植區塊樣式 */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .transplant-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--label);
+      margin-bottom: 12px;
+    }
+    .transplant-section {
+      background: #fafbfc;
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px 14px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
-
-    .saved-inquiry-label {
+    .transplant-label {
       font-size: 12px;
       font-weight: 700;
-      color: #8a6500;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      color: var(--label);
+      margin-bottom: 10px;
+    }
+    .transplant-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    /* 按鈕統一風格 */
+    .btn-secondary {
+      width: 100%;
+      padding: 9px 18px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--label);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 8px;
+    }
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f0f6ff;
     }
 
     .hidden {
@@ -611,16 +657,7 @@
       <section id="login-panel" class="card">
         <h2>帳號登入</h2>
 
-        <!-- 上次保存的帳號 ID（複製後自動顯示） -->
-        <div id="savedInquirySection" class="saved-inquiry hidden">
-          <span class="saved-inquiry-label">📌 上次保存的帳號 ID</span>
-          <div class="code-copy" style="margin-top:6px;">
-            <span id="savedInquiryCode" class="code-text" style="font-size:13px;"></span>
-            <button class="btn-copy" id="btnCopySavedInquiry">複製</button>
-          </div>
-          <small class="tip" style="margin-top:4px;">此為上次使用「複製帳號 ID」按鈕時記錄的帳號，重整後仍可查閱。</small>
-        </div>
-
+        <!-- 登入表單 -->
         <div class="form-group">
           <label for="transferCode">轉移號碼 (Transfer Code)</label>
           <input type="text" id="transferCode" placeholder="請輸入轉移號碼">
@@ -644,47 +681,35 @@
             <input type="text" id="gameVersion" value="15.2.1">
           </div>
         </div>
-        <div class="login-footer">
-          <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
-          <button id="btnRecoverLastCode" class="btn-danger">找回上次上傳代碼 (防刷新)</button>
-        </div>
-        <div class="clone-divider">
-          <span>或</span>
-        </div>
-        <button id="btnClone" class="btn-clone">🐱 複製帳號（一鍵產生兩組帳密）</button>
-        <small class="tip" style="margin-top:6px;display:block;text-align:center;">直接登入並上傳，同時顯示原帳與複製帳的代碼。</small>
+        <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
+        <button id="btnRecoverLastCode" class="btn-secondary">🔄 找回上次上傳代碼</button>
 
-        <!-- 移植帳號（進階） -->
-        <div class="clone-divider"><span>或</span></div>
-        <details id="transplantDetails">
-          <summary id="transplantSummary">🔀 移植帳號（把強帳進度移植到獨立空殼）</summary>
-          <div class="transplant-box">
-            <p class="transplant-hint">移植後，空殼帳號將擁有強帳的完整進度，且 Inquiry Code 保持不同，完全獨立。</p>
-            <div class="transplant-section">
-              <div class="transplant-label">💪 來源帳（強帳）</div>
-              <div class="form-group">
-                <label for="srcTC">引繼碼</label>
-                <input type="text" id="srcTC" placeholder="來源帳引繼碼">
-              </div>
-              <div class="form-group">
-                <label for="srcCC">認證碼</label>
-                <input type="text" id="srcCC" placeholder="來源帳認證碼">
-              </div>
-            </div>
-            <div class="transplant-section" style="margin-top:12px;">
-              <div class="transplant-label">🐣 目標帳（空殼）</div>
-              <div class="form-group">
-                <label for="dstTC">引繼碼</label>
-                <input type="text" id="dstTC" placeholder="空殼帳引繼碼">
-              </div>
-              <div class="form-group">
-                <label for="dstCC">認證碼</label>
-                <input type="text" id="dstCC" placeholder="空殼帳認證碼">
-              </div>
-            </div>
-            <button id="btnTransplant" class="btn-primary" style="margin-top:14px;">🚀 開始移植</button>
+        <!-- 移植帳號 -->
+        <div class="section-divider"><span>移植帳號</span></div>
+        <p class="transplant-hint">移植後，空殼帳號將擁有強帳的完整進度，且 Inquiry Code 保持不同，完全獨立。</p>
+        <div class="transplant-section">
+          <div class="transplant-label">💪 來源帳（強帳）</div>
+          <div class="form-group">
+            <label for="srcTC">引繼碼</label>
+            <input type="text" id="srcTC" placeholder="來源帳引繼碼">
           </div>
-        </details>
+          <div class="form-group">
+            <label for="srcCC">認證碼</label>
+            <input type="text" id="srcCC" placeholder="來源帳認證碼">
+          </div>
+        </div>
+        <div class="transplant-section">
+          <div class="transplant-label">🐣 目標帳（空殼）</div>
+          <div class="form-group">
+            <label for="dstTC">引繼碼</label>
+            <input type="text" id="dstTC" placeholder="空殼帳引繼碼">
+          </div>
+          <div class="form-group">
+            <label for="dstCC">認證碼</label>
+            <input type="text" id="dstCC" placeholder="空殼帳認證碼">
+          </div>
+        </div>
+        <button id="btnTransplant" class="btn-primary">🚀 開始移植</button>
 
       </section>
 

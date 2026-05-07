@@ -380,4 +380,53 @@ class BCSFE_Service:
             return {"transfer_code": codes[0], "confirmation_code": codes[1]}, "成功"
         return None, "上傳至遊戲伺服器失敗，請稍後再試"
 
+    async def clone_account(
+        self,
+        transfer_code: str,
+        confirmation_code: str,
+        country_code: str,
+        game_version: str,
+    ):
+        """
+        完整複製帳號：執行兩次上傳流程，產生兩組獨立的引繼代碼。
+        流程：
+          1. 用原始代碼登入 → 下載存檔 S
+          2. 上傳 → 取得「原帳新代碼」TC₁/CC₁
+          3. 用 TC₁/CC₁ 再次登入 → 再次下載同一份存檔 S
+          4. 上傳 → 取得「複製帳代碼」TC₂/CC₂
+        """
+        # ── Step 1：第一次登入 ─────────────────────────────────────────
+        success, msg = await self.login_and_fetch(
+            transfer_code, confirmation_code, country_code, game_version
+        )
+        if not success:
+            return None, f"登入失敗：{msg}"
+
+        # ── Step 2：第一次上傳 → 原帳新代碼 ───────────────────────────
+        codes1, msg1 = await self.upload()
+        if not codes1:
+            return None, f"第一次上傳失敗：{msg1}"
+
+        orig_tc = codes1["transfer_code"]
+        orig_cc = codes1["confirmation_code"]
+
+        # ── Step 3：用原帳新代碼再次登入 → 取得同一份存檔 ────────────
+        success, msg = await self.login_and_fetch(
+            orig_tc, orig_cc, country_code, game_version
+        )
+        if not success:
+            return None, f"第二次登入失敗（原帳新代碼無效）：{msg}"
+
+        # ── Step 4：第二次上傳 → 複製帳代碼 ──────────────────────────
+        codes2, msg2 = await self.upload()
+        if not codes2:
+            return None, f"第二次上傳失敗：{msg2}"
+
+        return {
+            "original_transfer_code":    orig_tc,
+            "original_confirmation_code": orig_cc,
+            "clone_transfer_code":        codes2["transfer_code"],
+            "clone_confirmation_code":    codes2["confirmation_code"],
+        }, "成功"
+
 service = BCSFE_Service()

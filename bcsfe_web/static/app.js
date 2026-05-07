@@ -20,11 +20,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     })();
+
+    // ── 頁面載入時，自動填回上次的引繼碼（讓「返回登入頁面」後免手動輸入）──
+    (function autoFillLastCodes() {
+        const lastTC = localStorage.getItem('last_transfer_code');
+        const lastCC = localStorage.getItem('last_conf_code');
+        if (!lastTC || !lastCC) return;
+        const tcEl = document.getElementById('transferCode');
+        const ccEl = document.getElementById('confCode');
+        if (tcEl) tcEl.value = lastTC;
+        if (ccEl) ccEl.value = lastCC;
+    })();
     // 元素引用
     const loginPanel = document.getElementById('login-panel');
     const dashboard = document.getElementById('dashboard');
     const resultPanel = document.getElementById('result-panel');
     const btnLogin = document.getElementById('btnLogin');
+    const btnClone = document.getElementById('btnClone');
     const btnUpload = document.getElementById('btnUpload');
     const btnCopyInquiry = document.getElementById('btnCopyInquiry');
     const btnRestart = document.getElementById('btnRestart');
@@ -32,6 +44,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const resTransferCode = document.getElementById('resTransferCode');
     const resConfCode = document.getElementById('resConfCode');
     const inquiryCodeDisplay = document.getElementById('inquiryCodeDisplay');
+    // 用於顯示結果面板的元素
+    const resultTitle = document.getElementById('resultTitle');
+    const resultWarning = document.getElementById('resultWarning');
+    const originalAccountSection = document.getElementById('originalAccountSection');
+    const cloneAccountLabel = document.getElementById('cloneAccountLabel');
+    const origTransferCode = document.getElementById('origTransferCode');
+    const origConfCode = document.getElementById('origConfCode');
+    const labelNewTC = document.getElementById('labelNewTC');
+    const labelNewCC = document.getElementById('labelNewCC');
+
+    // 輿模式切換：重置結果面板為普通上傳模式
+    function setResultMode(isClone) {
+        if (isClone) {
+            resultTitle.textContent = '帳號複製成功！';
+            resultWarning.textContent = '請妥善保存以下兩組代碼，原帳与複製帳均可登入遊戲。';
+            originalAccountSection.classList.remove('hidden');
+            cloneAccountLabel.classList.remove('hidden');
+            labelNewTC.textContent = '引繼碼 (Transfer Code)';
+            labelNewCC.textContent = '認證碼 (Confirmation Code)';
+        } else {
+            resultTitle.textContent = '存檔上傳成功！';
+            resultWarning.textContent = '請務必記下並妥善保存下列資訊，原有的引繼碼已失效。';
+            originalAccountSection.classList.add('hidden');
+            cloneAccountLabel.classList.add('hidden');
+            labelNewTC.textContent = '新引繼碼 (New Transfer Code)';
+            labelNewCC.textContent = '新認證碼 (New Confirmation Code)';
+        }
+    }
 
     // 狀態切換 - 通知
     function showNotification(message, type = 'success') {
@@ -68,8 +108,63 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 返回/重啟
+    // 複製帳號（完整複製：兩次登入+兩次上傳）
+    btnClone.addEventListener('click', async () => {
+        const transferCode = document.getElementById('transferCode').value.trim();
+        const confCode     = document.getElementById('confCode').value.trim();
+        const countryCode  = document.getElementById('countryCode').value;
+        const gameVersion  = document.getElementById('gameVersion').value.trim();
+
+        if (!transferCode || !confCode) {
+            showNotification('請先輸入引繼碼與認證碼', 'error');
+            return;
+        }
+
+        btnClone.disabled = true;
+        btnClone.textContent = '🔄 複製中（約需 15–30 秒）...';
+
+        try {
+            // 一個請求搞定：後端執行兩次登入+兩次上傳
+            const res = await fetch('/save/clone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    transfer_code: transferCode,
+                    confirmation_code: confCode,
+                    country_code: countryCode,
+                    game_version: gameVersion
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || '複製失敗');
+
+            // 存入 localStorage（以原帳新代碼為主）
+            localStorage.setItem('last_transfer_code', data.original_transfer_code);
+            localStorage.setItem('last_conf_code',     data.original_confirmation_code);
+
+            // 設定複製模式，填入兩組代碼
+            setResultMode(true);
+            origTransferCode.textContent = data.original_transfer_code;
+            origConfCode.textContent     = data.original_confirmation_code;
+            resTransferCode.textContent  = data.clone_transfer_code;
+            resConfCode.textContent      = data.clone_confirmation_code;
+
+            loginPanel.classList.add('hidden');
+            resultPanel.classList.remove('hidden');
+            showNotification('複製完成！兩組帳密已顯示。', 'success');
+
+        } catch (err) {
+            showNotification(err.message || '複製失敗', 'error');
+        } finally {
+            btnClone.disabled = false;
+            btnClone.textContent = '🐱 複製帳號（一鍵產生兩組帳密）';
+        }
+    });
+
+
+    // 返回登入時，重置結果面板到一般模式
     btnRestart.addEventListener('click', () => {
+        setResultMode(false);
         location.reload();
     });
 

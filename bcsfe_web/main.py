@@ -79,6 +79,24 @@ async def upload_save():
         "new_confirmation_code": result["confirmation_code"]
     }
 
+@app.post("/save/clone")
+async def clone_save(credentials: SaveLogin):
+    """
+    完整複製帳號端點。
+    執行兩次登入 + 兩次上傳，產生兩組擁有相同存檔的引繼代碼：
+    - original_transfer_code / original_confirmation_code：原帳的新代碼
+    - clone_transfer_code / clone_confirmation_code：複製帳的代碼
+    """
+    result, message = await service.clone_account(
+        credentials.transfer_code,
+        credentials.confirmation_code,
+        credentials.country_code,
+        credentials.game_version,
+    )
+    if not result:
+        raise HTTPException(status_code=400, detail=message)
+    return {"status": "success", **result}
+
 if __name__ == "__main__":
     # Render 會自動提供 PORT 環境變數
     port = int(os.environ.get("PORT", 8000))

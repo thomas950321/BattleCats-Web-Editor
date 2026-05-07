@@ -479,6 +479,61 @@
       background: var(--warn);
     }
 
+    .clone-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .clone-divider::before,
+    .clone-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .btn-clone {
+      width: 100%;
+      padding: 11px 18px;
+      border-radius: 7px;
+      border: 2px dashed #3a7bd5;
+      background: #f0f6ff;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn-clone:hover {
+      background: var(--primary);
+      color: #fff;
+      border-style: solid;
+    }
+    .btn-clone:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .result-account-block {
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .result-account-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--label);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
     .saved-inquiry {
       background: #fffbea;
       border: 1px solid #f0c040;
@@ -549,6 +604,11 @@
           <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
           <button id="btnRecoverLastCode" class="btn-danger">找回上次上傳代碼 (防刷新)</button>
         </div>
+        <div class="clone-divider">
+          <span>或</span>
+        </div>
+        <button id="btnClone" class="btn-clone">🐱 複製帳號（一鍵產生兩組帳密）</button>
+        <small class="tip" style="margin-top:6px;display:block;text-align:center;">直接登入並上傳，同時顯示原帳與複製帳的代碼。</small>
       </section>
 
       <!-- 修改儀表板 -->
@@ -723,25 +783,52 @@
       <section id="result-panel" class="card hidden">
         <div class="success-header">
           <div class="icon-check">✔</div>
-          <h2>存檔上傳成功！</h2>
+          <h2 id="resultTitle">存檔上傳成功！</h2>
         </div>
-        <p class="warning-text">請務必記下並妥善保存下列資訊，原有的引繼碼已失效。</p>
-        <div class="result-box">
-          <div class="result-item">
-            <label>新引繼碼 (New Transfer Code)</label>
-            <div class="code-copy">
-              <span id="resTransferCode" class="code-text">-----</span>
-              <button class="btn-copy" data-target="resTransferCode">複製</button>
+        <p class="warning-text" id="resultWarning">請務必記下並妥善保存下列資訊，原有的引繼碼已失效。</p>
+
+        <!-- 原帳區塊（只在複製模式顯示） -->
+        <div id="originalAccountSection" class="result-account-block hidden">
+          <div class="result-account-label">🔑 原帳（你輸入的代碼）</div>
+          <div class="result-box" style="margin-top:8px;">
+            <div class="result-item">
+              <label>引繼碼 (Transfer Code)</label>
+              <div class="code-copy">
+                <span id="origTransferCode" class="code-text">-----</span>
+                <button class="btn-copy" data-target="origTransferCode">複製</button>
+              </div>
+            </div>
+            <div class="result-item">
+              <label>認證碼 (Confirmation Code)</label>
+              <div class="code-copy">
+                <span id="origConfCode" class="code-text">-----</span>
+                <button class="btn-copy" data-target="origConfCode">複製</button>
+              </div>
             </div>
           </div>
-          <div class="result-item">
-            <label>新認證碼 (New Confirmation Code)</label>
-            <div class="code-copy">
-              <span id="resConfCode" class="code-text">-----</span>
-              <button class="btn-copy" data-target="resConfCode">複製</button>
+        </div>
+
+        <!-- 複製帳 / 一般上傳結果 -->
+        <div id="cloneAccountSection">
+          <div id="cloneAccountLabel" class="result-account-label hidden">📋 複製帳（新產生的代碼）</div>
+          <div class="result-box" style="margin-top:8px;">
+            <div class="result-item">
+              <label id="labelNewTC">新引繼碼 (New Transfer Code)</label>
+              <div class="code-copy">
+                <span id="resTransferCode" class="code-text">-----</span>
+                <button class="btn-copy" data-target="resTransferCode">複製</button>
+              </div>
+            </div>
+            <div class="result-item">
+              <label id="labelNewCC">新認證碼 (New Confirmation Code)</label>
+              <div class="code-copy">
+                <span id="resConfCode" class="code-text">-----</span>
+                <button class="btn-copy" data-target="resConfCode">複製</button>
+              </div>
             </div>
           </div>
         </div>
+
         <div class="action-footer">
           <button id="btnRestart" class="btn-primary">返回登入頁面</button>
         </div>

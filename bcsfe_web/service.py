@@ -56,7 +56,20 @@ class BCSFE_Service:
         )
         
         if server_handler is None:
-            return False, "無效的轉移碼或連線錯誤"
+            if result is None:
+                # response is None → 無法連線到伺服器
+                reason = "無法連線至遊戲伺服器（網路逾時或防火牆阻擋）"
+            else:
+                # HTTP 回應不是 octet-stream → 伺服器拒絕請求
+                resp = result.response
+                status = getattr(resp, 'status_code', '?')
+                try:
+                    body = resp.text[:300] if resp else ''
+                except Exception:
+                    body = ''
+                reason = f"HTTP {status} — {body}"
+            print(f"[login] FAILED: {reason}", flush=True)
+            return False, f"登入失敗：{reason}"
             
         self.server_handler = server_handler
         self.current_save = server_handler.save_file

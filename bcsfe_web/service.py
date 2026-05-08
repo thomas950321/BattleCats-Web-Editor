@@ -393,14 +393,6 @@ class BCSFE_Service:
             return {"transfer_code": codes[0], "confirmation_code": codes[1]}, "成功"
         return None, "上傳至遊戲伺服器失敗，請稍後再試"
 
-    async def clone_account(
-        self,
-        transfer_code: str,
-        confirmation_code: str,
-        country_code: str,
-        game_version: str,
-    ):
-
 
     async def transplant_account(
         self,

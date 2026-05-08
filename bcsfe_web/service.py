@@ -411,28 +411,6 @@ class BCSFE_Service:
         import copy
         import time
 
-        # 進度欄位 (從來源複製到目標)
-        PROGRESS_FIELDS = [
-            "cats", "story", "event_stages", "item_reward_stages",
-            "timed_score_stages", "ex_stages", "uncanny", "catamin_stages",
-            "legend_quest", "aku", "zero_legends", "dojo", "dojo_chapters",
-            "tower", "challenge", "gauntlets", "collab_gauntlets",
-            "enigma_clears", "enigma", "behemoth_culling",
-            "catfood", "xp", "normal_tickets", "rare_tickets",
-            "platinum_tickets", "legend_tickets", "np", "platinum_shards",
-            "leadership", "hundred_million_ticket", "catfruit", "catseyes",
-            "catamins", "lucky_tickets", "battle_items", "talent_orbs",
-            "scheme_items", "treasure_chests", "special_skills",
-            "user_rank_rewards", "combo_unlocks", "combo_unlocked_10k_ur",
-            "gamatoto", "ototo", "logins", "missions", "cat_shrine",
-            "gatya", "event_capsules", "event_capsules_counter",
-            "event_capsules_2", "medals", "outbreaks", "map_resets",
-            "cleared_slots", "cleared_eoc_1", "itf1_complete", "itf1_ending",
-            "cotc_1_complete", "unlocked_ending", "enemy_guide", "unit_drops",
-            "stamp_data", "officer_pass", "wildcat_slots", "cat_scratcher",
-            "beacon_base", "item_pack", "labyrinth_medals", "dojo_3x_speed",
-        ]
-
         # ── Step 1：下載來源帳號 ───────────────────────────────────────
         success, msg = await self.login_and_fetch(
             source_tc, source_cc, country_code, game_version
@@ -452,13 +430,43 @@ class BCSFE_Service:
         # 取得目標帳號的 handler (用於稍後上傳)
         target_handler = self.server_handler
 
-        # ── Step 3：執行安全注入 (將進度從來源複製到目標) ──────────────
-        for field in PROGRESS_FIELDS:
-            if hasattr(source_save, field):
-                try:
-                    setattr(target_save, field, copy.deepcopy(getattr(source_save, field)))
-                except Exception as e:
-                    print(f"[transplant] skip field '{field}': {e}", flush=True)
+        # ── Step 3：執行安全注入 (精準覆蓋所有進度與狀態) ─────────────
+        # 定義必須從「目標空殼帳號」保留的身分關鍵欄位 (絕對不可被覆蓋)
+        IDENTITY_FIELDS = [
+            "inquiry_code", "password_refresh_token", "player_id", "os_value", 
+            "full_gameversion", "save_data_4_hash", "backup_counter", "backup_frame", 
+            "order_ids", "usl1", "usl2", "transfer_code", "confirmation_code",
+            "data", "save_path", "package_name", "cc", "game_version",
+            "energy_penalty_timestamp", "last_checked_energy_recovery_time", "date_int",
+            "server_handler"
+        ]
+        
+        # 需要重置為目前時間的欄位 (稍後獨立處理)
+        TIME_FIELDS = [
+            "timestamp", "g_timestamp", "g_servertimestamp", "date", "server_timestamp",
+            "g_timestamp_2", "g_servertimestamp_2", "m_gettimesave", "m_gettimesave_2",
+            "m_dGetTimeSave2", "m_dGetTimeSave3", "unknown_timestamp", "last_checked_reward_time",
+            "last_checked_expedition_time", "last_checked_zombie_time", "last_checked_castle_time",
+            "year", "month", "day"
+        ]
+
+        # 1. 拷貝所有【非身分】與【非時間】的欄位從 source 到 target
+        for field, src_val in vars(source_save).items():
+            if field in IDENTITY_FIELDS or field in TIME_FIELDS:
+                continue
+            try:
+                setattr(target_save, field, copy.deepcopy(src_val))
+            except Exception as e:
+                print(f"[transplant] skip copying field '{field}': {e}", flush=True)
+
+        # 2. 刪除 target 中有但 source 中沒有的【非身分】欄位 (抹除目標帳號多出的解鎖殘留)
+        for field in list(vars(target_save).keys()):
+            if field not in IDENTITY_FIELDS and field not in TIME_FIELDS:
+                if not hasattr(source_save, field):
+                    try:
+                        delattr(target_save, field)
+                    except Exception as e:
+                        pass
 
         # ── Step 4：數據指紋清理 (Data Scrubbing) ──────────────────────
         current_time = time.time()

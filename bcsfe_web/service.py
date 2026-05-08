@@ -400,47 +400,7 @@ class BCSFE_Service:
         country_code: str,
         game_version: str,
     ):
-        """
-        完整複製帳號：執行兩次上傳流程，產生兩組獨立的引繼代碼。
-        流程：
-          1. 用原始代碼登入 → 下載存檔 S
-          2. 上傳 → 取得「原帳新代碼」TC₁/CC₁
-          3. 用 TC₁/CC₁ 再次登入 → 再次下載同一份存檔 S
-          4. 上傳 → 取得「複製帳代碼」TC₂/CC₂
-        """
-        # ── Step 1：第一次登入 ─────────────────────────────────────────
-        success, msg = await self.login_and_fetch(
-            transfer_code, confirmation_code, country_code, game_version
-        )
-        if not success:
-            return None, f"登入失敗：{msg}"
 
-        # ── Step 2：第一次上傳 → 原帳新代碼 ───────────────────────────
-        codes1, msg1 = await self.upload()
-        if not codes1:
-            return None, f"第一次上傳失敗：{msg1}"
-
-        orig_tc = codes1["transfer_code"]
-        orig_cc = codes1["confirmation_code"]
-
-        # ── Step 3：用原帳新代碼再次登入 → 取得同一份存檔 ────────────
-        success, msg = await self.login_and_fetch(
-            orig_tc, orig_cc, country_code, game_version
-        )
-        if not success:
-            return None, f"第二次登入失敗（原帳新代碼無效）：{msg}"
-
-        # ── Step 4：第二次上傳 → 複製帳代碼 ──────────────────────────
-        codes2, msg2 = await self.upload()
-        if not codes2:
-            return None, f"第二次上傳失敗：{msg2}"
-
-        return {
-            "original_transfer_code":    orig_tc,
-            "original_confirmation_code": orig_cc,
-            "clone_transfer_code":        codes2["transfer_code"],
-            "clone_confirmation_code":    codes2["confirmation_code"],
-        }, "成功"
 
     async def transplant_account(
         self,
@@ -449,16 +409,17 @@ class BCSFE_Service:
         country_code: str, game_version: str,
     ):
         """
-        移植帳號（使用 deepcopy 策略，與 transplant_save.py 一致）：
-        1. 登入來源帳，取得進度物件
-        2. 登入目標帳（空殼），備份身份識別欄位
-        3. 用 deepcopy 把進度欄位複製到目標帳物件
-        4. 還原目標帳的身份識別欄位
-        5. 上傳目標帳
+        高安全性數據內容移植 (Safe Transplant Pro Max)：
+        1. 下載來源帳與目標帳的進度物件。
+        2. 以「目標帳」為基底，保留所有身分標識與隱藏指紋。
+        3. 將「來源帳」的核心進度欄位 (PROGRESS_FIELDS) 用 deepcopy 覆蓋至目標帳。
+        4. 數據清理：重設所有時間軸欄位為目前時間，消除邏輯死角與封號標記。
+        5. 重新簽署存檔 (set_hash)。
         """
         import copy
+        import time
 
-        # 進度欄位（從來源複製）
+        # 進度欄位 (從來源複製到目標)
         PROGRESS_FIELDS = [
             "cats", "story", "event_stages", "item_reward_stages",
             "timed_score_stages", "ex_stages", "uncanny", "catamin_stages",
@@ -479,40 +440,27 @@ class BCSFE_Service:
             "stamp_data", "officer_pass", "wildcat_slots", "cat_scratcher",
             "beacon_base", "item_pack", "labyrinth_medals", "dojo_3x_speed",
         ]
-        # 身份識別欄位（保留目標帳）
-        IDENTITY_FIELDS = [
-            "inquiry_code", "transfer_code", "confirmation_code",
-            "transfer_flag", "password_refresh_token", "player_id",
-            "has_account", "backup_state", "order_ids",
-            "g_timestamp", "g_servertimestamp", "m_gettimesave",
-            "g_timestamp_2", "g_servertimestamp_2", "m_gettimesave_2",
-            "m_dGetTimeSave2", "m_dGetTimeSave3", "unknown_timestamp",
-            "usl1", "full_gameversion", "energy_notification",
-        ]
 
-        # ── Step 1：登入來源帳 ─────────────────────────────────────────
+        # ── Step 1：下載來源帳號 ───────────────────────────────────────
         success, msg = await self.login_and_fetch(
             source_tc, source_cc, country_code, game_version
         )
         if not success:
-            return None, f"來源帳登入失敗：{msg}"
+            return None, f"來源帳號登入失敗：{msg}"
         source_save = self.current_save
 
-        # ── Step 2：登入目標帳（空殼） ────────────────────────────────
+        # ── Step 2：下載目標帳號 ───────────────────────────────────────
         success, msg = await self.login_and_fetch(
             target_tc, target_cc, country_code, game_version
         )
         if not success:
-            return None, f"目標帳登入失敗：{msg}"
+            return None, f"目標帳號登入失敗：{msg}"
         target_save = self.current_save
+        
+        # 取得目標帳號的 handler (用於稍後上傳)
+        target_handler = self.server_handler
 
-        # ── Step 3：備份目標帳身份識別 ────────────────────────────────
-        identity_backup = {}
-        for field in IDENTITY_FIELDS:
-            if hasattr(target_save, field):
-                identity_backup[field] = copy.deepcopy(getattr(target_save, field))
-
-        # ── Step 4：把進度欄位從來源 deepcopy 到目標 ──────────────────
+        # ── Step 3：執行安全注入 (將進度從來源複製到目標) ──────────────
         for field in PROGRESS_FIELDS:
             if hasattr(source_save, field):
                 try:
@@ -520,20 +468,44 @@ class BCSFE_Service:
                 except Exception as e:
                     print(f"[transplant] skip field '{field}': {e}", flush=True)
 
-        # ── Step 5：還原目標帳身份識別 ────────────────────────────────
-        for field, val in identity_backup.items():
-            setattr(target_save, field, val)
+        # ── Step 4：數據指紋清理 (Data Scrubbing) ──────────────────────
+        current_time = time.time()
+        
+        # 需要重置為目前時間的欄位
+        TIME_FIELDS = [
+            "timestamp", "g_timestamp", "g_servertimestamp", "date", "server_timestamp",
+            "g_timestamp_2", "g_servertimestamp_2", "m_gettimesave", "m_gettimesave_2",
+            "m_dGetTimeSave2", "m_dGetTimeSave3", "unknown_timestamp", "last_checked_reward_time",
+            "last_checked_expedition_time", "last_checked_zombie_time", "last_checked_castle_time"
+        ]
+        
+        for t_field in TIME_FIELDS:
+            if hasattr(target_save, t_field):
+                setattr(target_save, t_field, current_time)
 
+        # 消除潛在的封號標記與連線警告
+        if hasattr(target_save, "show_ban_message"):
+            target_save.show_ban_message = False
+        if hasattr(target_save, "banned"):
+            target_save.banned = False
+
+        # ── Step 5：重新計算校驗碼 ─────────────────────────────────────
+        target_save.set_hash()
+
+        # 更新狀態準備上傳
         self.current_save = target_save
+        if target_handler:
+            target_handler.save_file = target_save
+            self.server_handler = target_handler
 
-        # ── Step 6：上傳目標帳 ────────────────────────────────────────
+        # ── Step 6：執行上傳到目標帳號 ─────────────────────────────────
         codes, msg_up = await self.upload()
         if not codes:
-            return None, f"上傳失敗：{msg_up}"
+            return None, f"移植後上傳失敗：{msg_up}"
 
         return {
             "new_transfer_code":     codes["transfer_code"],
             "new_confirmation_code": codes["confirmation_code"],
-        }, "成功"
+        }, "數據內容移植成功！進度已完全轉移至目標帳號。"
 
 service = BCSFE_Service()

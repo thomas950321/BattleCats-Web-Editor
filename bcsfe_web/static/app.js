@@ -440,10 +440,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('last_transfer_code', data.new_transfer_code);
                 localStorage.setItem('last_conf_code',     data.new_confirmation_code);
 
-                // 一般模式：只顯示目標帳的新代碼（移植成功）
-                setResultMode(false);
-                document.getElementById('resultTitle').textContent   = '移植成功！';
-                document.getElementById('resultWarning').textContent = '空殼帳號已注入強帳進度，以下是新的轉移號碼。';
+                // 移植模式：顯示移植專用的標題與標籤
+                setResultMode(true);
                 resTransferCode.textContent = data.new_transfer_code;
                 resConfCode.textContent     = data.new_confirmation_code;
 

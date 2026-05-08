@@ -4,7 +4,7 @@ transplant_save.py
 將「來源存檔（強帳）」的進度數據移植到「目標存檔（新帳）」中，
 同時保留目標存檔的身份識別資訊（Inquiry Code、Token、Device ID）。
 
-使用方式
+使用方式    
 --------
 python transplant_save.py <來源存檔路徑> <目標存檔路徑> [--output <輸出路徑>]
 

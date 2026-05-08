@@ -473,7 +473,22 @@ class BCSFE_Service:
         
         for t_field in TIME_FIELDS:
             if hasattr(target_save, t_field):
-                setattr(target_save, t_field, current_time)
+                old_val = getattr(target_save, t_field)
+                if isinstance(old_val, float):
+                    setattr(target_save, t_field, float(current_time))
+                elif isinstance(old_val, int):
+                    setattr(target_save, t_field, int(current_time))
+                elif hasattr(old_val, "year") and hasattr(old_val, "month"): # Is datetime
+                    import datetime
+                    setattr(target_save, t_field, datetime.datetime.fromtimestamp(current_time))
+                    
+        # 也手動更新獨立的時間欄位
+        if hasattr(target_save, "year"):
+            import datetime
+            now = datetime.datetime.fromtimestamp(current_time)
+            target_save.year = now.year
+            target_save.month = now.month
+            target_save.day = now.day
 
         # 消除潛在的封號標記與連線警告
         if hasattr(target_save, "show_ban_message"):

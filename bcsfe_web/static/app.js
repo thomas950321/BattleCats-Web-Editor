@@ -16,23 +16,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // 結果面板模式切換
     function setResultMode(isTransplant) {
         const origSection = document.getElementById('originalAccountSection');
-        const cloneLabel  = document.getElementById('cloneAccountLabel');
+        const cloneLabel = document.getElementById('cloneAccountLabel');
         const labelTC = document.getElementById('labelNewTC');
         const labelCC = document.getElementById('labelNewCC');
         if (isTransplant) {
-            if (resultTitle)  resultTitle.textContent  = '移植成功！';
+            if (resultTitle) resultTitle.textContent = '移植成功！';
             if (resultWarning) resultWarning.textContent = '空殼帳號已注入強帳進度，以下是新的轉移號碼。';
-            if (origSection)  origSection.classList.add('hidden');
-            if (cloneLabel)   cloneLabel.classList.add('hidden');
-            if (labelTC)      labelTC.textContent = '轉移號碼 (Transfer Code)';
-            if (labelCC)      labelCC.textContent = '認證號碼 (Confirmation Code)';
+            if (origSection) origSection.classList.add('hidden');
+            if (cloneLabel) cloneLabel.classList.add('hidden');
+            if (labelTC) labelTC.textContent = '轉移號碼 (Transfer Code)';
+            if (labelCC) labelCC.textContent = '認證號碼 (Confirmation Code)';
         } else {
-            if (resultTitle)  resultTitle.textContent  = '存檔上傳成功！';
+            if (resultTitle) resultTitle.textContent = '存檔上傳成功！';
             if (resultWarning) resultWarning.textContent = '請務必記下並妥善保存下列資訊，原有的轉移號碼已失效。';
-            if (origSection)  origSection.classList.add('hidden');
-            if (cloneLabel)   cloneLabel.classList.add('hidden');
-            if (labelTC)      labelTC.textContent = '新轉移號碼 (New Transfer Code)';
-            if (labelCC)      labelCC.textContent = '新認證號碼 (New Confirmation Code)';
+            if (origSection) origSection.classList.add('hidden');
+            if (cloneLabel) cloneLabel.classList.add('hidden');
+            if (labelTC) labelTC.textContent = '新轉移號碼 (New Transfer Code)';
+            if (labelCC) labelCC.textContent = '新認證號碼 (New Confirmation Code)';
         }
     }
 
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
-        
+
         // 安全檢查：確保 data 是數組，避免流程崩潰
         if (!Array.isArray(data)) {
             console.warn(`[Render] ${prefix} 數據為空或非數組格式`);
@@ -144,11 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const maxLimit = (prefix === '貓薄荷' || prefix === '本能玉') ? 998 : 9999;
-        
+
         data.forEach((val, i) => {
             const item = document.createElement('div');
             item.className = 'flex-item';
-            
+
             let name = '';
             let amount = val;
             let id = i;
@@ -232,11 +232,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 generateGrid('base-materials-grid', saveData.base_materials || [], '基地素材');
 
                 document.getElementById('inquiryCodeDisplay').textContent = `ID: ${saveData.inquiry_code || 'N/A'}`;
-                const banWarning = document.getElementById('banWarning');
+                const banBadge = document.getElementById('banStatusBadge');
+                banBadge.style.display = 'inline-block';
                 if (saveData.banned) {
-                    banWarning.classList.remove('hidden');
+                    banBadge.style.color = '#ff4d4f';
+                    banBadge.style.background = '#fff1f0';
+                    banBadge.style.border = '1px solid #ffa39e';
+                    banBadge.textContent = '帳號已有封號標記 (本次儲存將自動為您解除)';
                 } else {
-                    banWarning.classList.add('hidden');
+                    banBadge.style.color = '#389e0d';
+                    banBadge.style.background = '#f6ffed';
+                    banBadge.style.border = '1px solid #b7eb8f';
+                    banBadge.textContent = '帳號狀態安全 (無異常標記)';
                 }
             } else {
                 showNotification('讀取失敗: ' + (result.detail || '碼錯誤或連線失敗'), 'error');
@@ -274,10 +281,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // 核心：比對差異 (Dirty Check)
             const updates = {};
             const itemIds = [
-                ['catfood', 'catfood'], ['xp', 'xp'], ['np', 'np'], 
-                ['leadership', 'leadership'], ['normalTickets', 'normal_tickets'], 
-                ['rareTickets', 'rare_tickets'], ['platinumTickets', 'platinum_tickets'], 
-                ['legendTickets', 'legend_tickets'], ['platinumShards', 'platinum_shards'], 
+                ['catfood', 'catfood'], ['xp', 'xp'], ['np', 'np'],
+                ['leadership', 'leadership'], ['normalTickets', 'normal_tickets'],
+                ['rareTickets', 'rare_tickets'], ['platinumTickets', 'platinum_tickets'],
+                ['legendTickets', 'legend_tickets'], ['platinumShards', 'platinum_shards'],
                 ['playTime', 'play_time']
             ];
 
@@ -377,11 +384,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultPanel.classList.remove('hidden');
                 resTransferCode.textContent = result.new_transfer_code;
                 resConfCode.textContent = result.new_confirmation_code;
-                
+
                 // 保存至本地瀏覽器，防止刷新遺失
                 localStorage.setItem('last_transfer_code', result.new_transfer_code);
                 localStorage.setItem('last_conf_code', result.new_confirmation_code);
-                
+
                 showNotification('上傳成功！請保存新碼。');
             }
         } catch (err) {
@@ -396,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnRecoverLastCode').addEventListener('click', () => {
         const lastTC = localStorage.getItem('last_transfer_code');
         const lastCC = localStorage.getItem('last_conf_code');
-        
+
         if (lastTC && lastCC) {
             document.getElementById('transferCode').value = lastTC;
             document.getElementById('confCode').value = lastCC;
@@ -416,8 +423,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const srcCC = document.getElementById('srcCC').value.trim();
             const dstTC = document.getElementById('dstTC').value.trim();
             const dstCC = document.getElementById('dstCC').value.trim();
-            const cc    = document.getElementById('countryCode').value;
-            const gv    = document.getElementById('gameVersion').value.trim();
+            const cc = document.getElementById('countryCode').value;
+            const gv = document.getElementById('gameVersion').value.trim();
 
             if (!srcTC || !srcCC || !dstTC || !dstCC) {
                 showNotification('請填寫來源帳與目標帳的完整代碼', 'error');
@@ -444,12 +451,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok) throw new Error(data.detail || '移植失敗');
 
                 localStorage.setItem('last_transfer_code', data.new_transfer_code);
-                localStorage.setItem('last_conf_code',     data.new_confirmation_code);
+                localStorage.setItem('last_conf_code', data.new_confirmation_code);
 
                 // 移植模式：顯示移植專用的標題與標籤
                 setResultMode(true);
                 resTransferCode.textContent = data.new_transfer_code;
-                resConfCode.textContent     = data.new_confirmation_code;
+                resConfCode.textContent = data.new_confirmation_code;
 
                 loginPanel.classList.add('hidden');
                 resultPanel.classList.remove('hidden');

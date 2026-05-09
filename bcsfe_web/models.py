@@ -83,3 +83,4 @@ class SaveDataResponse(BaseModel):
     labyrinth_medals: List[int]
     event_lucky_tickets: int
     play_time: int
+    banned: bool = False

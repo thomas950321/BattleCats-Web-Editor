@@ -676,8 +676,12 @@
 
       <!-- 修改儀表板 -->
       <section id="dashboard" class="hidden">
-        <div class="toolbar">
+        <div class="toolbar" style="display: flex; align-items: center; gap: 10px;">
           <span id="inquiryCodeDisplay">ID: -----</span>
+          <span id="banWarning" class="hidden" style="color: #ff4d4f; font-weight: bold; font-size: 13px; background: #fff1f0; border: 1px solid #ffa39e; padding: 4px 8px; border-radius: 4px;">
+            ⚠️ 帳號已有封號標記 (本次儲存將自動為您解除)
+          </span>
+          <div style="flex: 1;"></div>
           <button id="btnUpload" class="btn-success">儲存並上傳至伺服器</button>
           <div class="tabs">
             <button class="tab-btn active" data-tab="items">道具修改</button>

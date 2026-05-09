@@ -232,6 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 generateGrid('base-materials-grid', saveData.base_materials || [], '基地素材');
 
                 document.getElementById('inquiryCodeDisplay').textContent = `ID: ${saveData.inquiry_code || 'N/A'}`;
+                const banWarning = document.getElementById('banWarning');
+                if (saveData.banned) {
+                    banWarning.classList.remove('hidden');
+                } else {
+                    banWarning.classList.add('hidden');
+                }
             } else {
                 showNotification('讀取失敗: ' + (result.detail || '碼錯誤或連線失敗'), 'error');
             }

@@ -141,7 +141,8 @@ class BCSFE_Service:
             "talent_orbs": self.get_talent_orbs_list(),
             "labyrinth_medals": list(getattr(self.current_save, "labyrinth_medals", []) or []),
             "event_lucky_tickets": getattr(self.current_save, "lucky_tickets", [0])[0] if getattr(self.current_save, "lucky_tickets", None) else 0,
-            "play_time": getattr(self.current_save.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(self.current_save, "officer_pass") else 0
+            "play_time": getattr(self.current_save.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(self.current_save, "officer_pass") else 0,
+            "banned": getattr(self.current_save, "show_ban_message", False)
         }
 
     def _clamp(self, val, max_val, min_val=0):

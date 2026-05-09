@@ -23,7 +23,7 @@ class BCSFE_Service:
             # 優先搜尋專案內的測試數據 (適用於雲端部署)
             test_save_path = core.Path(os.path.join(current_dir, "test_data", "SAVE_DATA"))
             # 退而求其次搜尋本地存檔路徑 (相容本地運行)
-            local_save_path = core.Path.get_documents_folder().add("saves").add("SAVE_DATA")
+            local_save_path = core.Path.get_data_folder().add("saves").add("SAVE_DATA")
             
             target_path = test_save_path if test_save_path.exists() else local_save_path
             

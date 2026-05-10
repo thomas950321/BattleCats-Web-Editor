@@ -245,6 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     banBadge.style.border = '1px solid #b7eb8f';
                     banBadge.textContent = '帳號狀態安全 (無異常標記)';
                 }
+
+                if (saveData.tutorial_auto_skipped) {
+                    showNotification('偵測到帳號尚未完成新手教學，已自動為您跳過！', 'success');
+                }
             } else {
                 showNotification('讀取失敗: ' + (result.detail || '碼錯誤或連線失敗'), 'error');
             }

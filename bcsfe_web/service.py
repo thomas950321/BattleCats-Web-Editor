@@ -17,8 +17,10 @@ class BCSFE_Service:
     def __init__(self):
         self.current_save: core.SaveFile | None = None
         self.server_handler: core.ServerHandler | None = None
+        self.tutorial_auto_skipped = False
 
     async def login_and_fetch(self, transfer_code: str, confirmation_code: str, country_code: str, game_version: str):
+        self.tutorial_auto_skipped = False
         if transfer_code == "TEST" and confirmation_code == "0000":
             # 優先搜尋專案內的測試數據 (適用於雲端部署)
             test_save_path = core.Path(os.path.join(current_dir, "test_data", "SAVE_DATA"))
@@ -73,6 +75,12 @@ class BCSFE_Service:
             
         self.server_handler = server_handler
         self.current_save = server_handler.save_file
+
+        # 自動跳過新手教學邏輯
+        if self.current_save and getattr(self.current_save, "tutorial_state", 0) == 0:
+            core.StoryChapters.clear_tutorial(self.current_save)
+            self.tutorial_auto_skipped = True
+            print("[login] Tutorial auto-skipped for new account.", flush=True)
 
         return True, "成功"
 
@@ -142,7 +150,8 @@ class BCSFE_Service:
             "labyrinth_medals": list(getattr(self.current_save, "labyrinth_medals", []) or []),
             "event_lucky_tickets": getattr(self.current_save, "lucky_tickets", [0])[0] if getattr(self.current_save, "lucky_tickets", None) else 0,
             "play_time": getattr(self.current_save.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(self.current_save, "officer_pass") else 0,
-            "banned": getattr(self.current_save, "show_ban_message", False)
+            "banned": getattr(self.current_save, "show_ban_message", False),
+            "tutorial_auto_skipped": self.tutorial_auto_skipped
         }
 
     def _clamp(self, val, max_val, min_val=0):

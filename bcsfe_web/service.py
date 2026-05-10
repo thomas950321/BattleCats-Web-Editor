@@ -514,6 +514,10 @@ class BCSFE_Service:
         if hasattr(target_save, "banned"):
             target_save.banned = False
 
+        # 同步新手教學狀態：如果來源帳號已過教學，目標帳號也必須清除
+        if getattr(source_save, "tutorial_state", 0) > 0:
+            core.StoryChapters.clear_tutorial(target_save)
+
         # ── Step 5：重新計算校驗碼 ─────────────────────────────────────
         target_save.set_hash()
 

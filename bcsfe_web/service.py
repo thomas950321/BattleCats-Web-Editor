@@ -295,9 +295,6 @@ class BCSFE_Service:
                     if 0 <= cat_id < total_cats:
                         cat = self.current_save.cats.cats[cat_id]
                         cat.unlock(self.current_save)
-                        # 給予基本滿等與進化
-                        cat.set_form(2, self.current_save)
-                        cat.set_upgrade(self.current_save, core.Upgrade(base=30, plus=0))
                     else:
                         raise ValueError(f"輸入的貓咪編號 ({cat_id}) 無效！遊戲目前只有 0 ~ {total_cats - 1} 號貓咪。")
                 except ValueError as e:

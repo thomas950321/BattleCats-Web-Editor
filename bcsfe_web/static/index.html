@@ -632,7 +632,7 @@
             <label for="countryCode">地區</label>
             <select id="countryCode">
               <option value="en">EN (美/歐)</option>
-              <option value="tw">TW (台版)</option>
+              <option value="tw" selected>TW (台版)</option>
               <option value="jp">JP (日版)</option>
               <option value="kr">KR (韓版)</option>
             </select>
@@ -820,13 +820,14 @@
             </div>
 
             <div class="adv-card">
-              <h4>獲得單一貓咪</h4>
+              <h4>獲得特定貓咪 (批次)</h4>
               <div class="list">
-                <label style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                  <span>輸入貓咪編號 (ID)：</span>
-                  <input type="number" id="advSingleCatId" placeholder="例如：441" style="width: 100px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
-                </label>
-                <label><input type="checkbox" id="advUnlockSingleCat"> 確認解鎖此貓咪</label>
+                <p class="transplant-hint" style="margin-bottom: 8px;">在下方格子輸入貓咪 ID（每次儲存會自動過濾重複與無效 ID）：</p>
+                <div id="catUnlockGrid" class="flex-grid" style="gap: 8px; margin-bottom: 12px;">
+                  <!-- 動態產生輸入框 -->
+                </div>
+                <button type="button" id="btnAddCatInput" class="btn-secondary" style="margin-top: 0; margin-bottom: 12px; width: auto; padding: 4px 12px;">+ 新增格子</button>
+                <label><input type="checkbox" id="advUnlockSingleCat"> 確認解鎖上述貓咪</label>
               </div>
             </div>
 

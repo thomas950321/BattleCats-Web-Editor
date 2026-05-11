@@ -287,21 +287,23 @@ class BCSFE_Service:
                         for talent in cat.talents:
                             talent.level = 10
             
-            unlock_single_id = cat_opts.get("unlock_single_cat_id", -1)
-            if unlock_single_id != -1 and unlock_single_id is not None:
+            unlock_single_id = cat_opts.get("unlock_single_cat_id")
+            if unlock_single_id is not None and str(unlock_single_id).strip() != "":
                 try:
                     cat_id = int(unlock_single_id)
                     total_cats = len(self.current_save.cats.cats)
                     if 0 <= cat_id < total_cats:
                         cat = self.current_save.cats.cats[cat_id]
+                        if cat.unlocked:
+                            raise ValueError(f"你已經擁有編號 {cat_id} 的貓咪了，不需重複解鎖！")
                         cat.unlock(self.current_save)
                     else:
-                        raise ValueError(f"輸入的貓咪編號 ({cat_id}) 無效！遊戲目前只有 0 ~ {total_cats - 1} 號貓咪。")
+                        raise ValueError(f"輸入的貓咪編號 ({cat_id}) 無效！目前存檔僅支援 0 ~ {total_cats - 1}。")
                 except ValueError as e:
-                    if "無效" in str(e):
+                    if "無效" in str(e) or "已經擁有" in str(e):
                         raise e
                     else:
-                        raise ValueError("貓咪編號必須是數字！")
+                        raise ValueError("貓咪編號必須是有效的正整數數字！")
 
         tech_opts = advanced.get("tech")
         if tech_opts and tech_opts.get("max_all_tech"):

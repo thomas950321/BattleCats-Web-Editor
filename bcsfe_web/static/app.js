@@ -131,13 +131,39 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
+    // --- 新增：批次獲得貓咪的格子管理 ---
+    function addCatInput() {
+        const grid = document.getElementById('catUnlockGrid');
+        if (!grid) return;
+        const item = document.createElement('div');
+        item.className = 'flex-item';
+        item.style.minWidth = '80px';
+        item.innerHTML = `
+            <input type="text" class="cat-unlock-input" placeholder="ID-形態" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px;">
+        `;
+        grid.appendChild(item);
+    }
+
+    function initCatUnlockGrid() {
+        const grid = document.getElementById('catUnlockGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        for (let i = 0; i < 5; i++) {
+            addCatInput();
+        }
+    }
+
+    const btnAddCatInput = document.getElementById('btnAddCatInput');
+    if (btnAddCatInput) {
+        btnAddCatInput.addEventListener('click', addCatInput);
+    }
+
     // 輔助函式：生成動態網格 (使用新版 .flex-item 結構)
     function generateGrid(containerId, data, prefix) {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
 
-        // 安全檢查：確保 data 是數組，避免流程崩潰
         if (!Array.isArray(data)) {
             console.warn(`[Render] ${prefix} 數據為空或非數組格式`);
             data = [];
@@ -230,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 generateGrid('catseyes-grid', saveData.catseyes || [], '貓眼石');
                 generateGrid('catfruit-grid', saveData.catfruit || [], '貓薄荷');
                 generateGrid('base-materials-grid', saveData.base_materials || [], '基地素材');
+                initCatUnlockGrid(); // 初始化貓咪解鎖格子
 
                 document.getElementById('inquiryCodeDisplay').textContent = `ID: ${saveData.inquiry_code || 'N/A'}`;
                 const banBadge = document.getElementById('banStatusBadge');
@@ -349,7 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         true_form: document.getElementById('advTrueForm')?.checked || false,
                         fourth_form: document.getElementById('advFourthForm')?.checked || false,
                         max_talents: document.getElementById('advMaxTalents')?.checked || false,
-                        unlock_single_cat_id: document.getElementById('advUnlockSingleCat')?.checked ? (parseInt(document.getElementById('advSingleCatId')?.value) || -1) : -1
+                        unlock_cat_ids: document.getElementById('advUnlockSingleCat')?.checked ? 
+                            Array.from(document.querySelectorAll('.cat-unlock-input'))
+                                .map(input => input.value.trim())
+                                .filter(val => val !== '') : null
                     },
                     tech: {
                         max_all_tech: document.getElementById('advMaxTech')?.checked || false

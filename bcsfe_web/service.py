@@ -287,23 +287,38 @@ class BCSFE_Service:
                         for talent in cat.talents:
                             talent.level = 10
             
-            unlock_single_id = cat_opts.get("unlock_single_cat_id")
-            if unlock_single_id is not None and str(unlock_single_id).strip() != "":
-                try:
-                    cat_id = int(unlock_single_id)
-                    total_cats = len(self.current_save.cats.cats)
-                    if 0 <= cat_id < total_cats:
-                        cat = self.current_save.cats.cats[cat_id]
-                        if cat.unlocked:
-                            raise ValueError(f"你已經擁有編號 {cat_id} 的貓咪了，不需重複解鎖！")
-                        cat.unlock(self.current_save)
-                    else:
-                        raise ValueError(f"輸入的貓咪編號 ({cat_id}) 無效！目前存檔僅支援 0 ~ {total_cats - 1}。")
-                except ValueError as e:
-                    if "無效" in str(e) or "已經擁有" in str(e):
-                        raise e
-                    else:
-                        raise ValueError("貓咪編號必須是有效的正整數數字！")
+            # 獲得特定貓咪 (批次)
+            cat_ids_to_unlock = cat_opts.get("unlock_cat_ids")
+            if cat_ids_to_unlock and isinstance(cat_ids_to_unlock, list):
+                total_cats = len(self.current_save.cats.cats)
+                for raw_entry in cat_ids_to_unlock:
+                    try:
+                        # 處理 ID-形態 格式 (例如 34-3 代表 34 號貓的三階)
+                        parts = str(raw_entry).strip().split("-")
+                        cat_id = int(parts[0])
+                        target_form = int(parts[1]) if len(parts) > 1 else 1 # 預設第一形態
+                        
+                        if 0 <= cat_id < total_cats:
+                            cat = self.current_save.cats.cats[cat_id]
+                            cat.unlock(self.current_save)
+                            
+                            # 如果指定了二階以上，需要同步處理等級與形態
+                            if target_form > 1:
+                                # 三階(3)需要等級 30, 四階(4)需要等級 60
+                                if target_form >= 4:
+                                    cat.set_upgrade(self.current_save, core.Upgrade(base=60, plus=0))
+                                elif target_form >= 3:
+                                    cat.set_upgrade(self.current_save, core.Upgrade(base=30, plus=0))
+                                elif target_form >= 2:
+                                    cat.set_upgrade(self.current_save, core.Upgrade(base=10, plus=0))
+                                    
+                                # 設定形態 (內部索引為 0-indexed)
+                                cat.set_form(target_form - 1, self.current_save)
+                        else:
+                            raise ValueError(f"編號 {cat_id} 超出範圍！目前存檔僅支援 0 ~ {total_cats - 1}。")
+                    except (ValueError, IndexError):
+                        # 略過格式錯誤的輸入
+                        continue
 
         tech_opts = advanced.get("tech")
         if tech_opts and tech_opts.get("max_all_tech"):

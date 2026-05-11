@@ -348,7 +348,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         max_level: document.getElementById('advMaxLevel')?.checked || false,
                         true_form: document.getElementById('advTrueForm')?.checked || false,
                         fourth_form: document.getElementById('advFourthForm')?.checked || false,
-                        max_talents: document.getElementById('advMaxTalents')?.checked || false
+                        max_talents: document.getElementById('advMaxTalents')?.checked || false,
+                        unlock_single_cat_id: document.getElementById('advUnlockSingleCat')?.checked ? (parseInt(document.getElementById('advSingleCatId')?.value) || -1) : -1
                     },
                     tech: {
                         max_all_tech: document.getElementById('advMaxTech')?.checked || false

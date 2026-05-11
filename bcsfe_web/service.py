@@ -286,6 +286,25 @@ class BCSFE_Service:
                     if cat.unlocked and cat.talents:
                         for talent in cat.talents:
                             talent.level = 10
+            
+            unlock_single_id = cat_opts.get("unlock_single_cat_id", -1)
+            if unlock_single_id != -1 and unlock_single_id is not None:
+                try:
+                    cat_id = int(unlock_single_id)
+                    total_cats = len(self.current_save.cats.cats)
+                    if 0 <= cat_id < total_cats:
+                        cat = self.current_save.cats.cats[cat_id]
+                        cat.unlock(self.current_save)
+                        # 給予基本滿等與進化
+                        cat.set_form(2, self.current_save)
+                        cat.set_upgrade(self.current_save, core.Upgrade(base=30, plus=0))
+                    else:
+                        raise ValueError(f"輸入的貓咪編號 ({cat_id}) 無效！遊戲目前只有 0 ~ {total_cats - 1} 號貓咪。")
+                except ValueError as e:
+                    if "無效" in str(e):
+                        raise e
+                    else:
+                        raise ValueError("貓咪編號必須是數字！")
 
         tech_opts = advanced.get("tech")
         if tech_opts and tech_opts.get("max_all_tech"):

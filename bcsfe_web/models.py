@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 class SaveLogin(BaseModel):
     transfer_code: str
@@ -37,7 +37,7 @@ class ItemUpdate(BaseModel):
     play_time: Optional[int] = None
 
 class AdvancedOptions(BaseModel):
-    cats: Optional[Dict[str, bool]] = None
+    cats: Optional[Dict[str, Any]] = None
     tech: Optional[Dict[str, bool]] = None
     progress: Optional[Dict[str, bool]] = None
     special: Optional[Dict[str, bool]] = None

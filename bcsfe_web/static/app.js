@@ -404,6 +404,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errData.detail || '套用修改失敗');
             }
 
+            // T-010：解析批次解鎖結果，顯示失敗明細
+            const patchData = await patchResp.json();
+            if (patchData.unlock_results) {
+                const failed = patchData.unlock_results.filter(r => !r.ok);
+                const succeeded = patchData.unlock_results.filter(r => r.ok);
+                if (failed.length > 0) {
+                    const failMsgs = failed.map(r => `・${r.id}：${r.msg}`).join('\n');
+                    showNotification(`⚠ ${succeeded.length} 隻解鎖成功，${failed.length} 隻失敗：\n${failMsgs}`, 'warn');
+                } else if (succeeded.length > 0) {
+                    showNotification(`✓ ${succeeded.length} 隻貓咪全部解鎖成功！`, 'success');
+                }
+            }
+
             // 第二步：執行上傳
             showNotification('正在上傳至遊戲伺服器...');
             const uploadResp = await fetch('/save/upload', { method: 'POST' });

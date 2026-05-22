@@ -68,7 +68,17 @@ async def patch_save(updates: SavePatchRequest):
         service.patch_stages(updates.stages.model_dump(exclude_unset=True))
     if updates.advanced:
         await service.patch_advanced(updates.advanced.model_dump(exclude_unset=True))
-    return {"status": "success", "message": "Save patched in memory"}
+
+    # T-010：回傳批次解鎖的逐一結果
+    unlock_results = getattr(service, "_last_unlock_results", None)
+    response = {"status": "success", "message": "Save patched in memory"}
+    if unlock_results is not None:
+        failed = [r for r in unlock_results if not r["ok"]]
+        response["unlock_results"] = unlock_results
+        response["unlock_failed_count"] = len(failed)
+        # 清除避免殘留
+        service._last_unlock_results = None
+    return response
 
 @app.post("/save/upload")
 async def upload_save():

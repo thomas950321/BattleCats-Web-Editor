@@ -62,14 +62,29 @@ class BCSFE_Service:
                 # response is None → 無法連線到伺服器
                 reason = "無法連線至遊戲伺服器（網路逾時或防火牆阻擋）"
             else:
-                # HTTP 回應不是 octet-stream → 伺服器拒絕請求
+                # HTTP 回應不是 octet-stream → 伺服器拒絕請求（T-011：statusCode 中文對照）
                 resp = result.response
                 status = getattr(resp, 'status_code', '?')
                 try:
-                    body = resp.text[:300] if resp else ''
+                    body_json = resp.json() if resp else {}
+                    ponos_code = body_json.get('statusCode', 0)
                 except Exception:
-                    body = ''
-                reason = f"HTTP {status} — {body}"
+                    ponos_code = 0
+
+                # PONOS statusCode 中文對照表
+                PONOS_ERROR_MAP = {
+                    101: "認證失敗：轉移碼或認證碼錯誤，請重新確認後再試。",
+                    111: "帳號驗證失敗：請確認地區（TW/JP/EN/KR）與遊戲版本是否正確。",
+                    104: "帳號不存在：此轉移碼已失效或從未被使用過。",
+                    107: "伺服器維護中：請稍後再試。",
+                    400: "請求格式錯誤：請確認代碼格式（轉移碼為9位英數字）。",
+                    429: "請求過於頻繁：請稍等幾分鐘後再試（防刷機制）。",
+                }
+                zh_reason = PONOS_ERROR_MAP.get(
+                    ponos_code,
+                    f"伺服器拒絕（HTTP {status}，代碼 {ponos_code}）"
+                )
+                reason = zh_reason
             print(f"[login] FAILED: {reason}", flush=True)
             return False, f"登入失敗：{reason}"
             
@@ -287,38 +302,64 @@ class BCSFE_Service:
                         for talent in cat.talents:
                             talent.level = 10
             
-            # 獲得特定貓咪 (批次)
+            # 獲得特定貓咪 (批次) — T-010：加入結構化驗證與錯誤回報
             cat_ids_to_unlock = cat_opts.get("unlock_cat_ids")
             if cat_ids_to_unlock and isinstance(cat_ids_to_unlock, list):
                 total_cats = len(self.current_save.cats.cats)
+                unlock_results = []  # 收集每個 ID 的處理結果
+
                 for raw_entry in cat_ids_to_unlock:
-                    try:
-                        # 處理 ID-形態 格式 (例如 34-3 代表 34 號貓的三階)
-                        parts = str(raw_entry).strip().split("-")
-                        cat_id = int(parts[0])
-                        target_form = int(parts[1]) if len(parts) > 1 else 1 # 預設第一形態
-                        
-                        if 0 <= cat_id < total_cats:
-                            cat = self.current_save.cats.cats[cat_id]
-                            cat.unlock(self.current_save)
-                            
-                            # 如果指定了二階以上，需要同步處理等級與形態
-                            if target_form > 1:
-                                # 三階(3)需要等級 30, 四階(4)需要等級 60
-                                if target_form >= 4:
-                                    cat.set_upgrade(self.current_save, core.Upgrade(base=60, plus=0))
-                                elif target_form >= 3:
-                                    cat.set_upgrade(self.current_save, core.Upgrade(base=30, plus=0))
-                                elif target_form >= 2:
-                                    cat.set_upgrade(self.current_save, core.Upgrade(base=10, plus=0))
-                                    
-                                # 設定形態 (內部索引為 0-indexed)
-                                cat.set_form(target_form - 1, self.current_save)
-                        else:
-                            raise ValueError(f"編號 {cat_id} 超出範圍！目前存檔僅支援 0 ~ {total_cats - 1}。")
-                    except (ValueError, IndexError):
-                        # 略過格式錯誤的輸入
+                    raw_str = str(raw_entry).strip()
+                    if not raw_str:
                         continue
+
+                    try:
+                        # 驗證格式：只允許 "數字" 或 "數字-數字"
+                        parts = raw_str.split("-")
+                        if not parts[0].isdigit():
+                            unlock_results.append({"id": raw_str, "ok": False, "msg": "格式錯誤（應為 ID 或 ID-形態）"})
+                            continue
+
+                        cat_id = int(parts[0])
+                        target_form = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 1
+
+                        # 驗證 ID 範圍
+                        if cat_id < 0 or cat_id >= total_cats:
+                            unlock_results.append({
+                                "id": raw_str, "ok": False,
+                                "msg": f"ID {cat_id} 超出範圍（此存檔最大為 {total_cats - 1}）"
+                            })
+                            continue
+
+                        # 驗證形態範圍
+                        if target_form < 1 or target_form > 4:
+                            unlock_results.append({"id": raw_str, "ok": False, "msg": f"形態 {target_form} 無效（需為 1~4）"})
+                            continue
+
+                        cat = self.current_save.cats.cats[cat_id]
+                        cat.unlock(self.current_save)
+
+                        # 同步等級與形態
+                        if target_form >= 4:
+                            cat.set_upgrade(self.current_save, core.Upgrade(base=60, plus=0))
+                        elif target_form >= 3:
+                            cat.set_upgrade(self.current_save, core.Upgrade(base=30, plus=0))
+                        elif target_form >= 2:
+                            cat.set_upgrade(self.current_save, core.Upgrade(base=10, plus=0))
+
+                        if target_form > 1:
+                            cat.set_form(target_form - 1, self.current_save)
+
+                        unlock_results.append({"id": raw_str, "ok": True, "msg": f"ID {cat_id} 解鎖成功（形態 {target_form}）"})
+
+                    except Exception as e:
+                        unlock_results.append({"id": raw_str, "ok": False, "msg": f"未知錯誤：{str(e)}"})
+
+                # 記錄結果至 instance 供 API 層讀取
+                self._last_unlock_results = unlock_results
+                failed = [r for r in unlock_results if not r["ok"]]
+                if failed:
+                    print(f"[patch_advanced] 以下貓咪解鎖失敗：{failed}", flush=True)
 
         tech_opts = advanced.get("tech")
         if tech_opts and tech_opts.get("max_all_tech"):

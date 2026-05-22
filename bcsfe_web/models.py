@@ -5,7 +5,7 @@ class SaveLogin(BaseModel):
     transfer_code: str
     confirmation_code: str
     country_code: str = "en"
-    game_version: str = "13.0.0"
+    game_version: str = "15.3.0"
 
 class TransplantRequest(BaseModel):
     """移植帳號請求：把來源帳的進度移植到目標帳（空殼）中"""
@@ -14,7 +14,7 @@ class TransplantRequest(BaseModel):
     target_transfer_code: str
     target_confirmation_code: str
     country_code: str = "en"
-    game_version: str = "13.0.0"
+    game_version: str = "15.3.0"
 
 class ItemUpdate(BaseModel):
     catfood: Optional[int] = None

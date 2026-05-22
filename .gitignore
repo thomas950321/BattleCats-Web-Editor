@@ -13,3 +13,16 @@ src/bcsfe/files/map_names
 pyrightconfig.json
 /test*.py
 /save.json
+
+# ── 暫存腳本與工具（T-001）──────────────────────
+unlock_batch.py
+diagnose_account.py
+transplant_save.py
+get_ubers.py
+deep_scan.py
+
+# 舊版/重複資料庫
+ubers_list_utf8.txt
+
+# 上傳歷史記錄（含敏感代碼）
+uploads_history.log

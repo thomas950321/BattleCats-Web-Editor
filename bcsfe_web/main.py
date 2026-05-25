@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest, TransplantRequest
 # pyrefly: ignore [missing-import]
 from bcsfe_web.service import service
+from bcsfe_web import scanner
 import uvicorn
 import os
 import traceback
@@ -79,6 +80,21 @@ async def patch_save(updates: SavePatchRequest):
         # 清除避免殘留
         service._last_unlock_results = None
     return response
+
+@app.get("/save/diagnose")
+async def diagnose_save():
+    """
+    T-024：帳號安全性深度診斷
+    對目前記憶體中的存檔執行完整安全審計（基於 account-security-analyzer Skill）。
+    回傳結構化 JSON，包含身世、資源、活動強度比對與封號標記。
+    """
+    if not service.current_save:
+        raise HTTPException(status_code=404, detail="存檔未載入，請先登入。")
+    try:
+        report = scanner.run_diagnosis(service.current_save)
+        return {"status": "success", "report": report}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"診斷失敗：{str(e)}")
 
 @app.post("/save/upload")
 async def upload_save():

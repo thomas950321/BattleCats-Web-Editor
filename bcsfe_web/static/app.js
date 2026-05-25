@@ -153,6 +153,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function ensureGoldPassRenewalField() {
+        if (document.getElementById('goldPassRenewalTimes')) return;
+
+        const playTimeInput = document.getElementById('playTime');
+        if (!playTimeInput) return;
+
+        const playTimeItem = playTimeInput.closest('.input-item');
+        const parentGrid = playTimeItem?.parentElement;
+        if (!parentGrid) return;
+
+        const field = document.createElement('div');
+        field.className = 'input-item';
+        field.innerHTML = `
+            <label>Gold Pass Renewal Times</label>
+            <input type="number" id="goldPassRenewalTimes" min="0" max="99999" placeholder="0">
+            <small class="tip">Maps to officer_pass.gold_pass.total_renewal_times</small>
+        `;
+        parentGrid.appendChild(field);
+    }
+
     const btnAddCatInput = document.getElementById('btnAddCatInput');
     if (btnAddCatInput) {
         btnAddCatInput.addEventListener('click', addCatInput);
@@ -231,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!saveDataRes.ok) throw new Error('無法獲取存檔詳細數據');
                 const saveData = await saveDataRes.json();
                 window.lastSaveData = JSON.parse(JSON.stringify(saveData)); // 拍攝初始快照
+                ensureGoldPassRenewalField();
 
                 // 基礎物資
                 document.getElementById('catfood').value = saveData.catfood;
@@ -249,6 +270,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 generateGrid('talent-orbs-grid', saveData.talent_orbs || [], '本能玉');
                 generateGrid('labyrinthMedalsGrid', saveData.labyrinth_medals || [], '迷宮獎牌');
                 document.getElementById('playTime').value = saveData.play_time || 0;
+                const goldPassRenewalInput = document.getElementById('goldPassRenewalTimes');
+                if (goldPassRenewalInput) {
+                    goldPassRenewalInput.value = saveData.gold_pass_renewal_times || 0;
+                }
 
                 // 動態生成素材列表 (增加安全回退值)
                 generateGrid('battle-items-grid', saveData.battle_items || [], '戰鬥道具');
@@ -316,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['leadership', 'leadership'], ['normalTickets', 'normal_tickets'],
                 ['rareTickets', 'rare_tickets'], ['platinumTickets', 'platinum_tickets'],
                 ['legendTickets', 'legend_tickets'], ['platinumShards', 'platinum_shards'],
-                ['playTime', 'play_time']
+                ['playTime', 'play_time'], ['goldPassRenewalTimes', 'gold_pass_renewal_times']
             ];
 
             // 1. 比對基礎數值 (增加安全檢查)

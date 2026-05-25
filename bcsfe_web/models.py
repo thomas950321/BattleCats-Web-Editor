@@ -35,6 +35,7 @@ class ItemUpdate(BaseModel):
     talent_orbs: Optional[Dict[str, int]] = None
     event_lucky_tickets: Optional[int] = None
     play_time: Optional[int] = None
+    gold_pass_renewal_times: Optional[int] = None
 
 class AdvancedOptions(BaseModel):
     cats: Optional[Dict[str, Any]] = None
@@ -83,4 +84,5 @@ class SaveDataResponse(BaseModel):
     labyrinth_medals: List[int]
     event_lucky_tickets: int
     play_time: int
+    gold_pass_renewal_times: int
     banned: bool = False

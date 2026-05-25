@@ -165,6 +165,11 @@ class BCSFE_Service:
             "labyrinth_medals": list(getattr(self.current_save, "labyrinth_medals", []) or []),
             "event_lucky_tickets": getattr(self.current_save, "lucky_tickets", [0])[0] if getattr(self.current_save, "lucky_tickets", None) else 0,
             "play_time": getattr(self.current_save.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(self.current_save, "officer_pass") else 0,
+            "gold_pass_renewal_times": getattr(
+                getattr(getattr(self.current_save, "officer_pass", None), "gold_pass", None),
+                "total_renewal_times",
+                0,
+            ),
             "banned": getattr(self.current_save, "show_ban_message", False),
             "tutorial_auto_skipped": self.tutorial_auto_skipped
         }
@@ -272,6 +277,18 @@ class BCSFE_Service:
                 # 設定遊玩時間安全上限 (例如 99999 小時)
                 self.current_save.officer_pass.play_time = self._clamp(updates["play_time"], 99999) * 3600 * 30
             
+        if (
+            "gold_pass_renewal_times" in updates
+            and updates["gold_pass_renewal_times"] is not None
+            and hasattr(self.current_save, "officer_pass")
+            and hasattr(self.current_save.officer_pass, "gold_pass")
+            and self.current_save.officer_pass.gold_pass is not None
+        ):
+            self.current_save.officer_pass.gold_pass.total_renewal_times = self._clamp(
+                updates["gold_pass_renewal_times"],
+                99999,
+            )
+
         return True
 
     async def patch_advanced(self, advanced: dict):

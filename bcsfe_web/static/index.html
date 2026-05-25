@@ -485,6 +485,7 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     details#transplantDetails summary {
       padding: 12px 14px;
       cursor: pointer;
@@ -495,27 +496,33 @@
       user-select: none;
       background: #f5f8ff;
     }
+
     details#transplantDetails summary:hover {
       background: #e8f0fe;
     }
+
     details#transplantDetails[open] summary {
       border-bottom: 1px solid var(--border);
     }
+
     .transplant-box {
       padding: 14px;
     }
+
     .transplant-hint {
       font-size: 12px;
       color: var(--muted);
       margin-bottom: 14px;
       line-height: 1.6;
     }
+
     .transplant-section {
       background: #fafbfc;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px 14px;
     }
+
     .transplant-label {
       font-size: 12px;
       font-weight: 700;
@@ -531,6 +538,7 @@
       color: var(--muted);
       font-size: 12px;
     }
+
     .clone-divider::before,
     .clone-divider::after {
       content: '';
@@ -548,6 +556,7 @@
       color: var(--muted);
       font-size: 12px;
     }
+
     .section-divider::before,
     .section-divider::after {
       content: '';
@@ -555,12 +564,14 @@
       height: 1px;
       background: var(--border);
     }
+
     .transplant-header {
       font-size: 13px;
       font-weight: 700;
       color: var(--label);
       margin-bottom: 12px;
     }
+
     .transplant-section {
       background: #fafbfc;
       border: 1px solid var(--border);
@@ -568,12 +579,14 @@
       padding: 12px 14px;
       margin-bottom: 10px;
     }
+
     .transplant-label {
       font-size: 12px;
       font-weight: 700;
       color: var(--label);
       margin-bottom: 10px;
     }
+
     .transplant-hint {
       font-size: 12px;
       color: var(--muted);
@@ -595,6 +608,7 @@
       transition: all 0.15s;
       margin-top: 8px;
     }
+
     .btn-secondary:hover {
       border-color: var(--primary);
       color: var(--primary);
@@ -678,7 +692,8 @@
       <section id="dashboard" class="hidden">
         <div class="toolbar" style="display: flex; align-items: center; gap: 10px;">
           <span id="inquiryCodeDisplay">ID: -----</span>
-          <span id="banStatusBadge" style="font-weight: bold; font-size: 13px; padding: 4px 8px; border-radius: 4px; display: none;">
+          <span id="banStatusBadge"
+            style="font-weight: bold; font-size: 13px; padding: 4px 8px; border-radius: 4px; display: none;">
             <!-- 動態填入狀態 -->
           </span>
           <div style="flex: 1;"></div>
@@ -826,13 +841,14 @@
                 <div id="catUnlockGrid" class="flex-grid" style="gap: 8px; margin-bottom: 12px;">
                   <!-- 動態產生輸入框 -->
                 </div>
-                <button type="button" id="btnAddCatInput" class="btn-secondary" style="margin-top: 0; margin-bottom: 12px; width: auto; padding: 4px 12px;">+ 新增格子</button>
+                <button type="button" id="btnAddCatInput" class="btn-secondary"
+                  style="margin-top: 0; margin-bottom: 12px; width: auto; padding: 4px 12px;">+ 新增格子</button>
                 <label><input type="checkbox" id="advUnlockSingleCat"> 確認解鎖上述貓咪</label>
               </div>
             </div>
 
             <div class="adv-card">
-              <h4>加碼多多 Gamatoto</h4>
+              <h4>加碼多多</h4>
               <div class="list">
                 <label><input type="checkbox" id="advMaxGamatoto"> 加碼多多等級 130 + 滿經驗</label>
                 <label><input type="checkbox" id="advBestMembers"> 全隊員替換為【傳說級別】(10位)</label>

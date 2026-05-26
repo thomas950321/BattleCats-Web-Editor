@@ -35,6 +35,13 @@
 - [x] deep_scan.py：帳號法醫分析（時間戳、遊玩時數比、封號標記）
 - [x] diagnose_account.py：詳細診斷腳本
 
+### Session 隔離
+- [x] SessionManager 多使用者隔離（UUID token，thread-safe）
+- [x] 登入自動建立 session，後續請求以 X-Session-Token header 識別
+- [x] 上傳完成後自動清除 session（一次性使用安全模型）
+- [x] 移植功能使用獨立臨時 session，不干擾已登入使用者
+- [x] 定期清理過期 session（30 分鐘閒置逾時）
+
 ### 專案管理文件
 - [x] Project_Index.md（架構索引）
 - [x] Task_Plan.md（任務計畫）
@@ -44,7 +51,7 @@
 
 ## 🚀 目前正在執行的區塊
 
-> **Sprint 1 — 核心穩定性強化** 進行中
+> **Sprint 1 — 核心穩定性強化** ✅ 已完成
 
 | Ticket | 狀態 | 說明 |
 |--------|------|------|
@@ -53,6 +60,7 @@
 | T-003 | 🔲 待執行 | 更新 CHANGELOG_ZH.md |
 | T-010 | ✅ 完成 | patch_advanced 加入結構化 ID/形態驗證，連同連線預期/失敗明細回報至前端 |
 | T-011 | ✅ 完成 | 登入失敗附帶 PONOS statusCode 中文對照表（101/111/104/107/400/429）|
+| BUG-001 | ✅ 完成 | SessionManager 實作，UUID token 隔離，thread-safe，30 分鐘閒置逾時 |
 
 ---
 
@@ -60,7 +68,7 @@
 
 | ID | 嚴重度 | 問題描述 | 影響範圍 |
 |----|--------|---------|---------|
-| BUG-001 | 🔴 高 | service 單例無 Session 隔離，多人同時操作互蓋存檔 | 多人使用場景 |
+| BUG-001 | 🟢 已修復 | ~~service 單例無 Session 隔離，多人同時操作互蓋存檔~~ | SessionManager 實作，UUID token 隔離 |
 | BUG-002 | 🟢 已修復 | ~~models.py 預設版本 `13.0.0`，與目前遊戲 `15.x` 不符~~ | T-002 已解決 |
 | BUG-003 | 🟢 已修復 | ~~貓咪 ID 超出 SaveFile 範圍時無明確前端錯誤訊息~~ | T-010 已解決 |
 | BUG-004 | 🟢 低 | ubers_list_utf8.txt 殘留根目錄未清理 | 專案整潔度 |
@@ -84,6 +92,6 @@
 本能珠修改      ████████░░░░   75%  (缺：一鍵全滿)
 帳號移植        ████████████  100%
 安全診斷        ████████░░░░   70%  (缺：整合進 Web UI)
-Session 管理   ████░░░░░░░░   20%  (無多人隔離)
+Session 管理   ████████████  100%  ✅ SessionManager 實作完成
 文件完整度      ████████████  100%  ← 本次新增
 ```

@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    let sessionToken = null;
+
     // 元素引用
     const loginPanel = document.getElementById('login-panel');
     const dashboard = document.getElementById('dashboard');
@@ -242,12 +244,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.status === 'success') {
+                sessionToken = result.session_token;
                 showNotification('存檔讀取成功！');
                 loginPanel.classList.add('hidden');
                 dashboard.classList.remove('hidden');
 
                 // 抓取真實數據
-                const saveDataRes = await fetch('/save/get');
+                const saveDataRes = await fetch('/save/get', {
+                    headers: { 'X-Session-Token': sessionToken }
+                });
                 if (!saveDataRes.ok) throw new Error('無法獲取存檔詳細數據');
                 const saveData = await saveDataRes.json();
                 window.lastSaveData = JSON.parse(JSON.stringify(saveData)); // 拍攝初始快照
@@ -420,7 +425,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btnUpload.textContent = '正在通訊...';
             const patchResp = await fetch('/save/patch', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-Token': sessionToken
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -444,7 +452,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 第二步：執行上傳
             showNotification('正在上傳至遊戲伺服器...');
-            const uploadResp = await fetch('/save/upload', { method: 'POST' });
+            const uploadResp = await fetch('/save/upload', {
+                method: 'POST',
+                headers: { 'X-Session-Token': sessionToken }
+            });
             if (!uploadResp.ok) {
                 const errData = await uploadResp.json();
                 throw new Error(errData.detail || '伺服器上傳失敗');

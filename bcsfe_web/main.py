@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 # pyrefly: ignore [missing-import]
 from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest, TransplantRequest
 # pyrefly: ignore [missing-import]
-from bcsfe_web.service import service
+from bcsfe_web.service import session_manager, BCSFE_Service
 from bcsfe_web import scanner
 import uvicorn
 import os
@@ -21,6 +21,12 @@ from bcsfe import core
 
 app = FastAPI(title="BCSFE Web Interface API")
 
+def get_service_or_404(session_token: str) -> BCSFE_Service:
+    svc = session_manager.get(session_token)
+    if svc is None:
+        raise HTTPException(status_code=401, detail="Session 已過期或無效，請重新登入")
+    return svc
+
 # 全域異常處理器
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -34,6 +40,18 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def startup_event():
     core.core_data.init_data()
 
+# 定期清理過期 session（每 5 分鐘）
+@app.on_event("startup")
+async def schedule_session_cleanup():
+    import asyncio
+    async def cleanup_loop():
+        while True:
+            await asyncio.sleep(300)
+            expired = session_manager.cleanup_expired()
+            if expired:
+                print(f"[session] cleaned {expired} expired sessions", flush=True)
+    asyncio.create_task(cleanup_loop())
+
 # 掛載靜態檔案 (使用相對路徑)
 static_path = os.path.join(current_dir, "static")
 app.mount("/static", StaticFiles(directory=static_path), name="static")
@@ -44,63 +62,72 @@ async def root():
 
 @app.post("/login")
 async def login(credentials: SaveLogin):
-    success, message = await service.login_and_fetch(
+    session_id = session_manager.create()
+    svc = session_manager.get(session_id)
+    success, message = await svc.login_and_fetch(
         credentials.transfer_code,
         credentials.confirmation_code,
         credentials.country_code,
         credentials.game_version
     )
     if not success:
+        session_manager.delete(session_id)
         raise HTTPException(status_code=400, detail=message)
-    return {"status": "success", "message": message}
+    return {"status": "success", "message": message, "session_token": session_id}
 
 @app.get("/save/get")
-async def get_save():
-    data = service.get_save_data()
+async def get_save(x_session_token: str = Header(...)):
+    svc = get_service_or_404(x_session_token)
+    data = svc.get_save_data()
     if not data:
         raise HTTPException(status_code=404, detail="存檔未載入")
     return data
 
 @app.post("/save/patch")
-async def patch_save(updates: SavePatchRequest):
+async def patch_save(updates: SavePatchRequest, x_session_token: str = Header(...)):
+    svc = get_service_or_404(x_session_token)
     if updates.items:
-        service.patch_items(updates.items.model_dump(exclude_unset=True))
+        svc.patch_items(updates.items.model_dump(exclude_unset=True))
     if updates.stages:
-        service.patch_stages(updates.stages.model_dump(exclude_unset=True))
+        svc.patch_stages(updates.stages.model_dump(exclude_unset=True))
     if updates.advanced:
-        await service.patch_advanced(updates.advanced.model_dump(exclude_unset=True))
+        await svc.patch_advanced(updates.advanced.model_dump(exclude_unset=True))
 
     # T-010：回傳批次解鎖的逐一結果
-    unlock_results = getattr(service, "_last_unlock_results", None)
+    unlock_results = getattr(svc, "_last_unlock_results", None)
     response = {"status": "success", "message": "Save patched in memory"}
     if unlock_results is not None:
         failed = [r for r in unlock_results if not r["ok"]]
         response["unlock_results"] = unlock_results
         response["unlock_failed_count"] = len(failed)
         # 清除避免殘留
-        service._last_unlock_results = None
+        svc._last_unlock_results = None
     return response
 
 @app.get("/save/diagnose")
-async def diagnose_save():
+async def diagnose_save(x_session_token: str = Header(...)):
     """
     T-024：帳號安全性深度診斷
     對目前記憶體中的存檔執行完整安全審計（基於 account-security-analyzer Skill）。
     回傳結構化 JSON，包含身世、資源、活動強度比對與封號標記。
     """
-    if not service.current_save:
+    svc = get_service_or_404(x_session_token)
+    if not svc.current_save:
         raise HTTPException(status_code=404, detail="存檔未載入，請先登入。")
     try:
-        report = scanner.run_diagnosis(service.current_save)
+        report = scanner.run_diagnosis(svc.current_save)
         return {"status": "success", "report": report}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"診斷失敗：{str(e)}")
 
 @app.post("/save/upload")
-async def upload_save():
-    result, message = await service.upload()
+async def upload_save(x_session_token: str = Header(...)):
+    svc = get_service_or_404(x_session_token)
+    result, message = await svc.upload()
     if not result:
         raise HTTPException(status_code=400, detail=message)
+    # 上傳成功後清除 session（一次性使用）
+    session_manager.delete(x_session_token)
     return {
         "status": "success",
         "new_transfer_code": result["transfer_code"],
@@ -112,20 +139,26 @@ async def upload_save():
 async def transplant_save(req: TransplantRequest):
     """
     移植帳號：把來源帳的進度移植到目標帳（空殼），保留目標帳的 Inquiry Code。
-    回傳目標帳上傳後的新引繼碼。
+    使用獨立 session 避免干擾已登入的使用者。回傳目標帳上傳後的新引繼碼。
     """
-    result, message = await service.transplant_account(
-        req.source_transfer_code, req.source_confirmation_code,
-        req.target_transfer_code, req.target_confirmation_code,
-        req.country_code, req.game_version,
-    )
-    if not result:
-        raise HTTPException(status_code=400, detail=message)
-    return {
-        "status": "success",
-        "new_transfer_code":    result["new_transfer_code"],
-        "new_confirmation_code": result["new_confirmation_code"],
-    }
+    # 建立臨時 session 執行移植，不影響使用者當前 session
+    session_id = session_manager.create()
+    svc = session_manager.get(session_id)
+    try:
+        result, message = await svc.transplant_account(
+            req.source_transfer_code, req.source_confirmation_code,
+            req.target_transfer_code, req.target_confirmation_code,
+            req.country_code, req.game_version,
+        )
+        if not result:
+            raise HTTPException(status_code=400, detail=message)
+        return {
+            "status": "success",
+            "new_transfer_code":    result["new_transfer_code"],
+            "new_confirmation_code": result["new_confirmation_code"],
+        }
+    finally:
+        session_manager.delete(session_id)
 
 
 if __name__ == "__main__":

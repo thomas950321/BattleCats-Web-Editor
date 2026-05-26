@@ -1,5 +1,8 @@
 import sys
 import os
+import uuid
+import time
+import threading
 
 # 確保能加載 src 中的 bcsfe 模組 (相對於目前檔案路徑)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -628,4 +631,43 @@ class BCSFE_Service:
             "new_confirmation_code": codes["confirmation_code"],
         }, "數據內容移植成功！進度已完全轉移至目標帳號。"
 
-service = BCSFE_Service()
+class SessionManager:
+    def __init__(self, timeout_minutes=30):
+        self._sessions: dict[str, dict] = {}
+        self._lock = threading.Lock()
+        self._timeout = timeout_minutes * 60
+
+    def create(self) -> str:
+        session_id = str(uuid.uuid4())
+        with self._lock:
+            self._sessions[session_id] = {
+                "service": BCSFE_Service(),
+                "created_at": time.time(),
+                "last_access": time.time(),
+            }
+        return session_id
+
+    def get(self, session_id: str) -> BCSFE_Service | None:
+        with self._lock:
+            session = self._sessions.get(session_id)
+            if session is None:
+                return None
+            session["last_access"] = time.time()
+            return session["service"]
+
+    def delete(self, session_id: str) -> bool:
+        with self._lock:
+            return self._sessions.pop(session_id, None) is not None
+
+    def cleanup_expired(self) -> int:
+        now = time.time()
+        with self._lock:
+            expired = [
+                sid for sid, s in self._sessions.items()
+                if now - s["last_access"] > self._timeout
+            ]
+            for sid in expired:
+                del self._sessions[sid]
+        return len(expired)
+
+session_manager = SessionManager()

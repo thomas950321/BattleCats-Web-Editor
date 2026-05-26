@@ -86,14 +86,14 @@ BCSFE-Python/
 
 ## 4. API 路由（bcsfe_web/main.py）
 
-| 方法 | 路徑 | 功能 | 對應 Service 方法 |
-|------|------|------|-----------------|
-| GET | `/` | 回傳前端 index.html | — |
-| POST | `/login` | 從 PONOS 伺服器下載存檔 | `service.login_and_fetch()` |
-| GET | `/save/get` | 取得目前存檔的數據快照 | `service.get_save_data()` |
-| POST | `/save/patch` | 修改記憶體內的存檔數據 | `service.patch_items/stages/advanced()` |
-| POST | `/save/upload` | 上傳修改後的存檔至 PONOS | `service.upload()` |
-| POST | `/save/transplant` | 高安全性帳號進度移植 | `service.transplant_account()` |
+| 方法 | 路徑 | 功能 | 對應 Service 方法 | 需 Session Token |
+|------|------|------|-----------------|-----------------|
+| GET | `/` | 回傳前端 index.html | — | ❌ |
+| POST | `/login` | 從 PONOS 伺服器下載存檔，回傳 session_token | `service.login_and_fetch()` | ❌ |
+| GET | `/save/get` | 取得目前存檔的數據快照 | `service.get_save_data()` | ✅ Header |
+| POST | `/save/patch` | 修改記憶體內的存檔數據 | `service.patch_items/stages/advanced()` | ✅ Header |
+| POST | `/save/upload` | 上傳修改後的存檔至 PONOS（自動清除 session） | `service.upload()` | ✅ Header |
+| POST | `/save/transplant` | 高安全性帳號進度移植（獨立 temp session） | `service.transplant_account()` | ❌ 自建 temp session |
 
 ---
 
@@ -165,11 +165,11 @@ PONOS 伺服器  →  新轉移碼 + 認證碼  →  瀏覽器
 
 ---
 
-## 9. 已知技術債
+## 9. 已知技術債（BUG-001 ✅ 已修復）
 
 | 優先級 | ID | 問題 | 說明 |
 |--------|-----|------|------|
-| 高 | BUG-001 | 無 Session 隔離 | `service` 是單例，多人同時使用互蓋存檔 |
+| 高 | BUG-001 | ✅ 已修復 | `SessionManager` 實作，UUID token 隔離 + thread-safe + 30min 閒置逾時 |
 | 高 | BUG-002 | 遊戲版本過舊 | `models.py` 預設 `13.0.0`，目前遊戲為 `15.x` |
 | 中 | BUG-003 | 貓咪 ID 無範圍驗證 | 超出範圍時無明確錯誤訊息 |
 | 低 | BUG-004 | 暫存檔未清理 | `unlock_batch.py`、`ubers_list_utf8.txt` 等 |

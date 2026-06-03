@@ -108,33 +108,54 @@ class BCSFE_Service:
             from bcsfe.core.game.catbase.talent_orbs import OrbInfoList
             orb_info_list = OrbInfoList.create(self.current_save)
             if orb_info_list:
-                # 建立屬性分組字典
+                # ── 屬性限定 S 級本能珠（依目標種族分組） ──────────────
                 groups = {}
                 for i, orb in enumerate(orb_info_list.orb_info_list):
                     if not orb.target or orb.rank != "S":
                         continue
-                    
+
                     target = orb.target
                     if target not in groups:
                         groups[target] = {
                             "name": f"全 S【{target}】本能珠",
                             "amount": 0
                         }
-                    
-                    # 抓取目前存檔中的數量 (取該群組中第一個找到的數值作為代表)
+
                     if hasattr(self.current_save.talent_orbs, "orbs") and i in self.current_save.talent_orbs.orbs:
                         if groups[target]["amount"] == 0:
                             groups[target]["amount"] = self.current_save.talent_orbs.orbs[i].value
 
-                # 轉換為前端列表格式
                 for target, info in groups.items():
                     talent_orbs_list.append({
                         "id": f"ATTR_{target}",
                         "name": info["name"],
                         "amount": info["amount"]
                     })
-                
-                # 按屬性名稱排序，確保顯示穩定
+
+                # ── 通用 S 級本能珠（無目標屬性，依效果名稱分組） ─────
+                univ_groups = {}
+                for i, orb in enumerate(orb_info_list.orb_info_list):
+                    if orb.rank != "S" or orb.target:
+                        continue
+
+                    effect = orb.effect
+                    if effect not in univ_groups:
+                        univ_groups[effect] = {
+                            "name": f"全 S【通用】{effect}",
+                            "amount": 0
+                        }
+
+                    if hasattr(self.current_save.talent_orbs, "orbs") and i in self.current_save.talent_orbs.orbs:
+                        if univ_groups[effect]["amount"] == 0:
+                            univ_groups[effect]["amount"] = self.current_save.talent_orbs.orbs[i].value
+
+                for effect, info in univ_groups.items():
+                    talent_orbs_list.append({
+                        "id": f"UNIV_{effect}",
+                        "name": info["name"],
+                        "amount": info["amount"]
+                    })
+
                 talent_orbs_list.sort(key=lambda x: x["name"])
 
         except Exception as e:
@@ -252,10 +273,17 @@ class BCSFE_Service:
             
             for key, val in updates["talent_orbs"].items():
                 if isinstance(key, str) and key.startswith("ATTR_"):
-                    # 屬性分組處理
+                    # 屬性分組處理（種族限定 S 級）
                     target_attr = key.replace("ATTR_", "")
                     for i, orb in enumerate(orb_info_list.orb_info_list):
                         if orb.rank == "S" and orb.target == target_attr:
+                            if hasattr(self.current_save, "talent_orbs"):
+                                self.current_save.talent_orbs.set_orb(i, self._clamp(val, limit))
+                elif isinstance(key, str) and key.startswith("UNIV_"):
+                    # 通用 S 級本能珠（無目標屬性，依效果名稱匹配）
+                    effect_name = key.replace("UNIV_", "")
+                    for i, orb in enumerate(orb_info_list.orb_info_list):
+                        if orb.rank == "S" and not orb.target and orb.effect == effect_name:
                             if hasattr(self.current_save, "talent_orbs"):
                                 self.current_save.talent_orbs.set_orb(i, self._clamp(val, limit))
                 else:

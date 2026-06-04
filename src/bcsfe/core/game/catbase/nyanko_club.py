@@ -83,6 +83,10 @@ class NyankoClub:
             badge_flag = data.read_bool()
         else:
             badge_flag = None
+
+        if login_bonus_date > time.time() + 86400:
+            login_bonus_date = 0.0
+
         return NyankoClub(
             officer_id,
             total_renewal_times,
@@ -140,6 +144,9 @@ class NyankoClub:
 
     @staticmethod
     def deserialize(data: dict[str, Any]) -> NyankoClub:
+        login_bonus_date = data.get("login_bonus_date", 0.0)
+        if login_bonus_date > time.time() + 86400:
+            login_bonus_date = 0.0
         return NyankoClub(
             data.get("officer_id", 0),
             data.get("total_renewal_times", 0),
@@ -151,7 +158,7 @@ class NyankoClub:
             data.get("end_date_total", 0.0),
             data.get("time_error_end", 0.0),
             data.get("total_state_updates", 0),
-            data.get("login_bonus_date", 0.0),
+            login_bonus_date,
             data.get("claimed_rewards", {}),
             data.get("remaing_days_popup", 0.0),
             data.get("first_popup_flag", False),
@@ -191,7 +198,7 @@ class NyankoClub:
 
         self.total_state_updates = 2
 
-        self.login_bonus_date = end_date_now
+        self.login_bonus_date = 0.0
 
         self.remaing_days_popup = 0.0
         self.first_popup_flag = True

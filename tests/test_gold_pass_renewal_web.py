@@ -15,8 +15,19 @@ def build_service_with_save():
     service = BCSFE_Service()
     service.get_talent_orbs_list = lambda: []
 
-    gold_pass = SimpleNamespace(total_renewal_times=7)
+    gold_pass = SimpleNamespace(total_renewal_times=7, officer_id=123)
     officer_pass = SimpleNamespace(play_time=12 * 3600 * 30, gold_pass=gold_pass)
+    
+    class DummyLogin:
+        count = 5
+    class DummyLogins:
+        def __init__(self):
+            self.login = DummyLogin()
+        def get_login(self, id):
+            return self.login
+    
+    logins_mock = DummyLogins()
+    
     save = SimpleNamespace(
         inquiry_code="ABC123",
         catfood=10,
@@ -37,14 +48,15 @@ def build_service_with_save():
         labyrinth_medals=[],
         lucky_tickets=[0],
         officer_pass=officer_pass,
+        logins=logins_mock,
         show_ban_message=False,
     )
     service.current_save = save
-    return service
+    return service, logins_mock.login
 
 
 def test_get_save_data_includes_gold_pass_renewal_times():
-    service = build_service_with_save()
+    service, _ = build_service_with_save()
 
     data = service.get_save_data()
 
@@ -54,11 +66,19 @@ def test_get_save_data_includes_gold_pass_renewal_times():
 
 
 def test_patch_items_updates_gold_pass_renewal_times(monkeypatch):
-    service = build_service_with_save()
+    import time
+    service, login_mock = build_service_with_save()
     monkeypatch.setattr(core.core_data, "max_value_manager", DummyMaxValues(), raising=False)
 
     ok = service.patch_items({"gold_pass_renewal_times": 123, "play_time": 24})
 
     assert ok is True
-    assert service.current_save.officer_pass.gold_pass.total_renewal_times == 123
+    gold_pass = service.current_save.officer_pass.gold_pass
+    assert gold_pass.total_renewal_times == 123
     assert service.current_save.officer_pass.play_time == 24 * 3600 * 30
+    
+    # Assert validity dates and rewards reset
+    assert gold_pass.login_bonus_date == 0.0
+    assert abs(gold_pass.start_date_now - time.time()) < 5
+    assert gold_pass.claimed_rewards == {}
+    assert login_mock.count == 0

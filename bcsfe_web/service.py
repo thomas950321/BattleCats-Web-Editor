@@ -315,10 +315,48 @@ class BCSFE_Service:
             and hasattr(self.current_save.officer_pass, "gold_pass")
             and self.current_save.officer_pass.gold_pass is not None
         ):
-            self.current_save.officer_pass.gold_pass.total_renewal_times = self._clamp(
-                updates["gold_pass_renewal_times"],
-                99999,
-            )
+            club = self.current_save.officer_pass.gold_pass
+            try:
+                val = int(updates["gold_pass_renewal_times"])
+            except (ValueError, TypeError):
+                val = 0
+            
+            if val < 0:
+                if hasattr(club, "remove_gold_pass"):
+                    club.remove_gold_pass(self.current_save)
+            else:
+                club.total_renewal_times = self._clamp(val, 99999)
+                
+                officer_id = getattr(club, "officer_id", -1)
+                if officer_id <= 0:
+                    club.officer_id = core.NyankoClub.get_random_officer_id()
+                
+                import time
+                import datetime
+                start_date_now = int(time.time())
+                total_days = 30
+                end_date_now = start_date_now + int(datetime.timedelta(days=total_days).total_seconds())
+                end_date_total = start_date_now + int(datetime.timedelta(days=total_days * 2).total_seconds())
+                
+                club.start_date_now = float(start_date_now)
+                club.end_date_now = float(end_date_now)
+                club.start_date_next = float(end_date_now)
+                club.end_date_next = float(end_date_total)
+                club.start_date_total = float(start_date_now)
+                club.end_date_total = float(end_date_total)
+                club.time_error_end = float(start_date_now)
+                club.total_state_updates = 2
+                
+                club.login_bonus_date = 0.0
+                club.remaing_days_popup = 0.0
+                club.first_popup_flag = True
+                club.badge_flag = False
+                club.claimed_rewards = {}
+                
+                if hasattr(self.current_save, "logins") and self.current_save.logins is not None:
+                    login = self.current_save.logins.get_login(5100)
+                    if login is not None:
+                        login.count = 0
 
         return True
 

@@ -345,7 +345,7 @@ class BCSFE_Service:
                 club.start_date_total = float(start_date_now)
                 club.end_date_total = float(end_date_total)
                 club.time_error_end = float(start_date_now)
-                club.total_state_updates = 2
+                club.total_state_updates = club.total_renewal_times
                 
                 club.login_bonus_date = 0.0
                 club.remaing_days_popup = 0.0

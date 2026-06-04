@@ -75,6 +75,7 @@ def test_patch_items_updates_gold_pass_renewal_times(monkeypatch):
     assert ok is True
     gold_pass = service.current_save.officer_pass.gold_pass
     assert gold_pass.total_renewal_times == 123
+    assert gold_pass.total_state_updates == 123
     assert service.current_save.officer_pass.play_time == 24 * 3600 * 30
     
     # Assert validity dates and rewards reset

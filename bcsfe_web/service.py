@@ -115,9 +115,10 @@ class BCSFE_Service:
                         continue
 
                     target = orb.target
+                    target_clean = target.replace("%@", "").strip() if target else target
                     if target not in groups:
                         groups[target] = {
-                            "name": f"全 S【{target}】本能珠",
+                            "name": f"全 S【{target_clean}】本能珠",
                             "amount": 0
                         }
 
@@ -139,9 +140,10 @@ class BCSFE_Service:
                         continue
 
                     effect = orb.effect
+                    effect_clean = effect.replace("%@", "").strip() if effect else effect
                     if effect not in univ_groups:
                         univ_groups[effect] = {
-                            "name": f"全 S【通用】{effect}",
+                            "name": f"全 S【通用】{effect_clean}",
                             "amount": 0
                         }
 

@@ -627,6 +627,11 @@
       <h1>貓咪大戰爭修改器</h1>
     </header>
 
+    <div class="top-nav" style="display: flex; justify-content: center; gap: 12px; margin-bottom: 20px;">
+      <button id="nav-editor" class="tab-btn active" style="font-size: 14px; padding: 8px 16px; min-width: 150px;">帳號登入與修改</button>
+      <button id="nav-admin" class="tab-btn" style="font-size: 14px; padding: 8px 16px; min-width: 150px;">歷史存檔資料庫</button>
+    </div>
+
     <main>
       <!-- 登入面板 -->
       <section id="login-panel" class="card">
@@ -924,6 +929,58 @@
 
         <div class="action-footer">
           <button id="btnRestart" class="btn-primary">返回登入頁面</button>
+        </div>
+      </section>
+
+      <!-- 歷史備份資料庫後台 -->
+      <section id="admin-panel" class="card hidden">
+        <h2>存檔歷史資料庫 (後台)</h2>
+        <p class="transplant-hint" style="margin-bottom: 16px;">
+          在此可以查看每次修改上傳後的帳號存檔紀錄。您可以將舊紀錄還原/複製至一個新的空殼帳號中，除詢問碼 (Inquiry Code) 外完全複製進度與等級。
+        </p>
+
+        <!-- 歷史紀錄列表 -->
+        <div id="history-list" class="list" style="margin-bottom: 20px; max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+          <div style="text-align: center; color: var(--muted); padding: 20px;">載入中...</div>
+        </div>
+
+        <!-- 還原表單 -->
+        <div id="restore-form-container" class="hidden" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); background: #fafbfc; border-radius: 8px; padding: 16px;">
+          <h3 style="color: var(--primary); margin-bottom: 12px;">還原存檔至目標帳號</h3>
+          <p class="transplant-hint">請輸入新的空殼帳號代碼。該目標帳號將被注入所選備份的完整進度，且其原本的詢問碼保持不變。</p>
+          <input type="hidden" id="restore-record-id">
+          
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>還原來源備份</label>
+            <div id="restore-source-summary" style="font-weight: 600; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;"></div>
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="restoreDstTC">目標空殼帳轉移號碼 (Target Transfer Code)</label>
+            <input type="text" id="restoreDstTC" placeholder="例如: abc123def">
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="restoreDstCC">目標空殼帳認證號碼 (Target Confirmation Code)</label>
+            <input type="text" id="restoreDstCC" placeholder="例如: 1234">
+          </div>
+          <div class="form-group row" style="margin-bottom: 14px; display: flex; gap: 12px;">
+            <div class="field" style="flex: 1;">
+              <label for="restoreCountryCode">地區</label>
+              <select id="restoreCountryCode" style="width:100%; padding:8px 10px; background:var(--input-bg); border:1px solid var(--border); border-radius:6px;">
+                <option value="en">EN (美/歐)</option>
+                <option value="tw" selected>TW (台版)</option>
+                <option value="jp">JP (日版)</option>
+                <option value="kr">KR (韓版)</option>
+              </select>
+            </div>
+            <div class="field" style="flex: 1;">
+              <label for="restoreGameVersion">版本</label>
+              <input type="text" id="restoreGameVersion" value="15.2.1" style="width:100%; padding:8px 10px; background:var(--input-bg); border:1px solid var(--border); border-radius:6px;">
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button id="btnCancelRestore" class="btn-secondary" style="margin-top:0; flex: 1;">取消</button>
+            <button id="btnStartRestore" class="btn-success" style="flex: 2;">開始複製並還原</button>
+          </div>
         </div>
       </section>
     </main>

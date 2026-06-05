@@ -26,3 +26,12 @@ ubers_list_utf8.txt
 
 # 上傳歷史記錄（含敏感代碼）
 uploads_history.log
+
+# 本地環境變數設定檔
+.env
+.env.local
+
+# 本地 SQLite 資料庫與暫存測試資料夾
+bcsfe.db
+*.db
+scratch/

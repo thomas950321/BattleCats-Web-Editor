@@ -1,8 +1,12 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 # pyrefly: ignore [missing-import]
-from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest, TransplantRequest
+from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest, TransplantRequest, RestoreRequest
 # pyrefly: ignore [missing-import]
 from bcsfe_web.service import session_manager, BCSFE_Service
 from bcsfe_web import scanner
@@ -159,6 +163,49 @@ async def transplant_save(req: TransplantRequest):
         }
     finally:
         session_manager.delete(session_id)
+
+
+@app.get("/admin/history")
+async def get_history():
+    try:
+        # pyrefly: ignore [missing-import]
+        from bcsfe_web.database import get_save_history
+        history = get_save_history()
+        return {"status": "success", "history": history}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"讀取紀錄失敗: {str(e)}")
+
+@app.post("/admin/restore")
+async def restore_save(req: RestoreRequest):
+    session_id = session_manager.create()
+    svc = session_manager.get(session_id)
+    try:
+        result, message = await svc.restore_save_to_account(
+            req.record_id,
+            req.target_transfer_code,
+            req.target_confirmation_code,
+            req.country_code,
+            req.game_version
+        )
+        if not result:
+            raise HTTPException(status_code=400, detail=message)
+        return {
+            "status": "success",
+            "new_transfer_code": result["new_transfer_code"],
+            "new_confirmation_code": result["new_confirmation_code"]
+        }
+    finally:
+        session_manager.delete(session_id)
+
+@app.delete("/admin/history/{record_id}")
+async def delete_record(record_id: int):
+    try:
+        # pyrefly: ignore [missing-import]
+        from bcsfe_web.database import delete_save_record
+        delete_save_record(record_id)
+        return {"status": "success", "message": "紀錄已刪除"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"刪除紀錄失敗: {str(e)}")
 
 
 if __name__ == "__main__":

@@ -554,4 +554,198 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- 歷史存檔資料庫 (後台) 功能 ---
+    const navEditor = document.getElementById('nav-editor');
+    const navAdmin = document.getElementById('nav-admin');
+    const adminPanel = document.getElementById('admin-panel');
+
+    if (navEditor && navAdmin && adminPanel) {
+        navEditor.addEventListener('click', () => {
+            navEditor.classList.add('active');
+            navAdmin.classList.remove('active');
+            adminPanel.classList.add('hidden');
+            if (sessionToken) {
+                dashboard.classList.remove('hidden');
+            } else {
+                loginPanel.classList.remove('hidden');
+            }
+            resultPanel.classList.add('hidden');
+        });
+
+        navAdmin.addEventListener('click', () => {
+            navAdmin.classList.add('active');
+            navEditor.classList.remove('active');
+            loginPanel.classList.add('hidden');
+            dashboard.classList.add('hidden');
+            resultPanel.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            fetchHistory();
+        });
+    }
+
+    async function fetchHistory() {
+        const historyList = document.getElementById('history-list');
+        if (!historyList) return;
+        historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">載入中...</div>';
+
+        try {
+            const res = await fetch('/admin/history');
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || '獲取歷史紀錄失敗');
+
+            const history = data.history || [];
+            if (history.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 30px; border: 1px dashed var(--border); border-radius: 8px; background: #fafbfc;">目前無存檔紀錄</div>';
+                return;
+            }
+
+            historyList.innerHTML = '';
+            history.forEach(record => {
+                const card = document.createElement('div');
+                card.className = 'sub-section';
+                card.style.marginBottom = '16px';
+                card.style.border = '1px solid var(--border)';
+                card.style.boxShadow = 'var(--shadow)';
+                card.style.background = '#fff';
+                card.style.padding = '16px';
+                card.style.borderRadius = '8px';
+                card.style.display = 'block';
+
+                const sum = record.summary || {};
+                const localTime = new Date(record.created_at + 'Z').toLocaleString('zh-TW', { hour12: false });
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <span style="font-weight: 700; color: var(--text); font-size: 14px;">詢問碼 ID: ${record.inquiry_code || 'N/A'}</span>
+                            <span style="font-size: 11px; background: #e8f0fe; color: var(--primary); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${record.country_code.toUpperCase()} v${record.game_version}</span>
+                        </div>
+                        <span style="font-size: 12px; color: var(--muted);">${localTime}</span>
+                    </div>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">歷史引繼代碼</div>
+                            <div style="font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px;">轉移: ${record.transfer_code}</div>
+                            <div style="font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text);">認證: ${record.confirmation_code}</div>
+                        </div>
+                        <div style="flex: 2; min-width: 250px;">
+                            <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">存檔概要</div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                                <div style="font-size: 12px;">罐頭: <b style="color: #e67e22;">${(sum.catfood || 0).toLocaleString()}</b></div>
+                                <div style="font-size: 12px;">經驗: <b style="color: #3a7bd5;">${(sum.xp || 0).toLocaleString()}</b></div>
+                                <div style="font-size: 12px;">NP: <b style="color: #27ae60;">${(sum.np || 0).toLocaleString()}</b></div>
+                                <div style="font-size: 12px;">旗子: <b>${sum.leadership || 0}</b></div>
+                                <div style="font-size: 12px;">金券: <b>${sum.rare_tickets || 0}</b></div>
+                                <div style="font-size: 12px;">貓咪: <b style="color: #8e44ad;">${sum.cats_count || 0} 隻</b></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                        <button class="btn-delete-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: #fdf2f2; color: #b91c1c; border: 1px solid #f87171; border-radius: 4px; font-weight: 600; cursor: pointer;">刪除紀錄</button>
+                        <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${record.inquiry_code} (${record.country_code.toUpperCase()} v${record.game_version}) | 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">還原此存檔至新帳號</button>
+                    </div>
+                `;
+                historyList.appendChild(card);
+            });
+
+            document.querySelectorAll('.btn-delete-record').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const recordId = btn.dataset.id;
+                    if (!confirm('確定要刪除這筆存檔備份紀錄嗎？此動作無法復原。')) return;
+                    try {
+                        const delRes = await fetch(`/admin/history/${recordId}`, { method: 'DELETE' });
+                        const delData = await delRes.json();
+                        if (!delRes.ok) throw new Error(delData.detail || '刪除失敗');
+                        showNotification('備份紀錄已成功刪除');
+                        fetchHistory();
+                    } catch (err) {
+                        showNotification(err.message, 'error');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-restore-record').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const recordId = btn.dataset.id;
+                    const summary = btn.dataset.summary;
+
+                    document.getElementById('restore-record-id').value = recordId;
+                    document.getElementById('restore-source-summary').textContent = summary;
+
+                    const formContainer = document.getElementById('restore-form-container');
+                    formContainer.classList.remove('hidden');
+                    formContainer.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+        } catch (err) {
+            historyList.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 20px;">錯誤: ${err.message}</div>`;
+        }
+    }
+
+    const btnCancelRestore = document.getElementById('btnCancelRestore');
+    if (btnCancelRestore) {
+        btnCancelRestore.addEventListener('click', () => {
+            document.getElementById('restore-form-container').classList.add('hidden');
+        });
+    }
+
+    const btnStartRestore = document.getElementById('btnStartRestore');
+    if (btnStartRestore) {
+        btnStartRestore.addEventListener('click', async () => {
+            const recordId = document.getElementById('restore-record-id').value;
+            const targetTC = document.getElementById('restoreDstTC').value.trim();
+            const targetCC = document.getElementById('restoreDstCC').value.trim();
+            const cc = document.getElementById('restoreCountryCode').value;
+            const gv = document.getElementById('restoreGameVersion').value.trim();
+
+            if (!targetTC || !targetCC) {
+                showNotification('請輸入目標空殼帳號的完整代碼', 'error');
+                return;
+            }
+
+            btnStartRestore.disabled = true;
+            btnStartRestore.textContent = '還原中...';
+
+            try {
+                const res = await fetch('/admin/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        record_id: parseInt(recordId),
+                        target_transfer_code: targetTC,
+                        target_confirmation_code: targetCC,
+                        country_code: cc,
+                        game_version: gv
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || '還原失敗');
+
+                localStorage.setItem('last_transfer_code', data.new_transfer_code);
+                localStorage.setItem('last_conf_code', data.new_confirmation_code);
+
+                setResultMode(true);
+                if (typeof resultTitle !== 'undefined' && resultTitle) resultTitle.textContent = '存檔還原成功！';
+                if (typeof resultWarning !== 'undefined' && resultWarning) resultWarning.textContent = '目標空殼帳號已注入所選備份存檔，以下是新的引繼代碼。';
+
+                resTransferCode.textContent = data.new_transfer_code;
+                resConfCode.textContent = data.new_confirmation_code;
+
+                adminPanel.classList.add('hidden');
+                document.getElementById('restore-form-container').classList.add('hidden');
+                resultPanel.classList.remove('hidden');
+
+                showNotification('存檔成功還原至目標空殼帳號！', 'success');
+
+            } catch (err) {
+                showNotification(err.message || '還原操作失敗', 'error');
+            } finally {
+                btnStartRestore.disabled = false;
+                btnStartRestore.textContent = '開始複製並還原';
+            }
+        });
+    }
 });

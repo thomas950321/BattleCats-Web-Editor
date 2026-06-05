@@ -548,19 +548,58 @@ class BCSFE_Service:
         return True
 
     async def upload(self):
+        ret_codes = None
         if not self.server_handler:
             if self.current_save:
                 # 模擬上傳成功
-                return {"transfer_code": "TEST-SUCCESS", "confirmation_code": "0000"}, "模擬上傳成功！"
-            return None, "目前無活動工作階段 (請重新登入)"
-        codes = self.server_handler.get_codes()
-        if codes:
+                ret_codes = ("TEST-SUCCESS", "0000")
+            else:
+                return None, "目前無活動工作階段 (請重新登入)"
+        else:
+            ret_codes = self.server_handler.get_codes()
+            
+        if ret_codes:
             # 確保內容也會印在伺服器日誌中，防止重新整理遺失
             print(f"\n[SUCCESS] 上傳成功！", flush=True)
-            print(f"新轉移碼 (Transfer Code): {codes[0]}", flush=True)
-            print(f"新認證碼 (Confirmation Code): {codes[1]}", flush=True)
+            print(f"新轉移碼 (Transfer Code): {ret_codes[0]}", flush=True)
+            print(f"新認證碼 (Confirmation Code): {ret_codes[1]}", flush=True)
             print(f"請務必保存以上資訊，以免遺失。\n", flush=True)
-            return {"transfer_code": codes[0], "confirmation_code": codes[1]}, "成功"
+            
+            # 將每次修改/上傳後的存檔完全儲存至 SQLite 資料庫中
+            try:
+                from bcsfe_web.database import insert_save_history
+                save_file = self.current_save
+                save_data_b64 = save_file.to_data().to_base_64()
+                inquiry_code = getattr(save_file, "inquiry_code", "")
+                cc = save_file.cc.get_code() if hasattr(save_file, "cc") else "tw"
+                gv = save_file.game_version.to_string() if hasattr(save_file, "game_version") else "15.3.0"
+                
+                # 建立歷史存檔摘要以供後台展示
+                summary = {
+                    "catfood": getattr(save_file, "catfood", 0),
+                    "xp": getattr(save_file, "xp", 0),
+                    "np": getattr(save_file, "np", 0),
+                    "leadership": getattr(save_file, "leadership", 0),
+                    "normal_tickets": getattr(save_file, "normal_tickets", 0),
+                    "rare_tickets": getattr(save_file, "rare_tickets", 0),
+                    "platinum_tickets": getattr(save_file, "platinum_tickets", 0),
+                    "legend_tickets": getattr(save_file, "legend_tickets", 0),
+                    "play_time": getattr(save_file.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(save_file, "officer_pass") else 0,
+                    "cats_count": len([c for c in save_file.cats.cats if c.unlocked]) if hasattr(save_file, "cats") else 0,
+                }
+                insert_save_history(
+                    inquiry_code=inquiry_code,
+                    transfer_code=ret_codes[0],
+                    confirmation_code=ret_codes[1],
+                    country_code=cc,
+                    game_version=gv,
+                    save_data_b64=save_data_b64,
+                    summary=summary
+                )
+            except Exception as db_err:
+                print(f"Error saving save history to DB: {db_err}", flush=True)
+
+            return {"transfer_code": ret_codes[0], "confirmation_code": ret_codes[1]}, "成功"
         return None, "上傳至遊戲伺服器失敗，請稍後再試"
 
 
@@ -696,6 +735,121 @@ class BCSFE_Service:
             "new_transfer_code":     codes["transfer_code"],
             "new_confirmation_code": codes["confirmation_code"],
         }, "數據內容移植成功！進度已完全轉移至目標帳號。"
+
+    async def restore_save_to_account(
+        self,
+        record_id: int,
+        target_tc: str, target_cc: str,
+        country_code: str, game_version: str,
+    ):
+        """
+        還原資料庫中的存檔紀錄到指定的目標帳號（空殼）。
+        除 inquiry_code 等身分識別欄位外，完全複製進度。
+        """
+        import copy
+        import time
+        import base64
+        from bcsfe_web.database import get_save_record
+
+        # 1. 從資料庫讀取來源存檔
+        record = get_save_record(record_id)
+        if not record:
+            return None, "找不到指定的存檔紀錄"
+        
+        save_data_b64 = record["save_data_b64"]
+        try:
+            # 解碼並載入存檔
+            save_bytes = base64.b64decode(save_data_b64)
+            source_save = core.SaveFile(dt=core.Data(save_bytes))
+        except Exception as e:
+            return None, f"解析儲存的存檔失敗: {str(e)}"
+
+        # 2. 下載目標帳號
+        success, msg = await self.login_and_fetch(
+            target_tc, target_cc, country_code, game_version
+        )
+        if not success:
+            return None, f"目標帳號登入失敗：{msg}"
+        target_save = self.current_save
+        target_handler = self.server_handler
+
+        # 3. 複製欄位（除身分與時間欄位外）
+        IDENTITY_FIELDS = [
+            "inquiry_code", "password_refresh_token", "player_id", "os_value", 
+            "full_gameversion", "save_data_4_hash", "backup_counter", "backup_frame", 
+            "order_ids", "usl1", "usl2", "transfer_code", "confirmation_code",
+            "data", "save_path", "package_name", "cc", "game_version",
+            "energy_penalty_timestamp", "last_checked_energy_recovery_time", "date_int",
+            "server_handler"
+        ]
+        
+        TIME_FIELDS = [
+            "timestamp", "g_timestamp", "g_servertimestamp", "date", "server_timestamp",
+            "g_timestamp_2", "g_servertimestamp_2", "m_gettimesave", "m_gettimesave_2",
+            "m_dGetTimeSave2", "m_dGetTimeSave3", "unknown_timestamp", "last_checked_reward_time",
+            "last_checked_expedition_time", "last_checked_zombie_time", "last_checked_castle_time",
+            "year", "month", "day"
+        ]
+
+        for field, src_val in vars(source_save).items():
+            if field in IDENTITY_FIELDS or field in TIME_FIELDS:
+                continue
+            try:
+                setattr(target_save, field, copy.deepcopy(src_val))
+            except Exception as e:
+                print(f"[restore] skip copying field '{field}': {e}", flush=True)
+
+        for field in list(vars(target_save).keys()):
+            if field not in IDENTITY_FIELDS and field not in TIME_FIELDS:
+                if not hasattr(source_save, field):
+                    try:
+                        delattr(target_save, field)
+                    except Exception as e:
+                        pass
+
+        # 4. 資料指紋清理
+        current_time = time.time()
+        for t_field in TIME_FIELDS:
+            if hasattr(target_save, t_field):
+                old_val = getattr(target_save, t_field)
+                if isinstance(old_val, float):
+                    setattr(target_save, t_field, float(current_time))
+                elif isinstance(old_val, int):
+                    setattr(target_save, t_field, int(current_time))
+                elif hasattr(old_val, "year") and hasattr(old_val, "month"):
+                    import datetime
+                    setattr(target_save, t_field, datetime.datetime.fromtimestamp(current_time))
+                    
+        if hasattr(target_save, "year"):
+            import datetime
+            now = datetime.datetime.fromtimestamp(current_time)
+            target_save.year = now.year
+            target_save.month = now.month
+            target_save.day = now.day
+
+        if hasattr(target_save, "show_ban_message"):
+            target_save.show_ban_message = False
+        if hasattr(target_save, "banned"):
+            target_save.banned = False
+
+        if getattr(source_save, "tutorial_state", 0) > 0:
+            core.StoryChapters.clear_tutorial(target_save)
+
+        # 5. 重新簽署並上傳
+        target_save.set_hash()
+        self.current_save = target_save
+        if target_handler:
+            target_handler.save_file = target_save
+            self.server_handler = target_handler
+
+        codes, msg_up = await self.upload()
+        if not codes:
+            return None, f"還原後上傳失敗：{msg_up}"
+
+        return {
+            "new_transfer_code":     codes["transfer_code"],
+            "new_confirmation_code": codes["confirmation_code"],
+        }, "存檔還原成功！"
 
 class SessionManager:
     def __init__(self, timeout_minutes=30):

@@ -579,6 +579,7 @@ class BCSFE_Service:
                     "catfood": getattr(save_file, "catfood", 0),
                     "xp": getattr(save_file, "xp", 0),
                     "np": getattr(save_file, "np", 0),
+                    "user_rank": save_file.calculate_user_rank() if hasattr(save_file, "calculate_user_rank") else 0,
                     "leadership": getattr(save_file, "leadership", 0),
                     "normal_tickets": getattr(save_file, "normal_tickets", 0),
                     "rare_tickets": getattr(save_file, "rare_tickets", 0),
@@ -587,6 +588,7 @@ class BCSFE_Service:
                     "play_time": getattr(save_file.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(save_file, "officer_pass") else 0,
                     "cats_count": len([c for c in save_file.cats.cats if c.unlocked]) if hasattr(save_file, "cats") else 0,
                 }
+
                 insert_save_history(
                     inquiry_code=inquiry_code,
                     transfer_code=ret_codes[0],

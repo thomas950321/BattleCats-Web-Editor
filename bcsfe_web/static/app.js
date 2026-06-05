@@ -635,6 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div style="font-size: 12px;">罐頭: <b style="color: #e67e22;">${(sum.catfood || 0).toLocaleString()}</b></div>
                                 <div style="font-size: 12px;">經驗: <b style="color: #3a7bd5;">${(sum.xp || 0).toLocaleString()}</b></div>
                                 <div style="font-size: 12px;">NP: <b style="color: #27ae60;">${(sum.np || 0).toLocaleString()}</b></div>
+                                <div style="font-size: 12px;">等級: <b style="color: #d35400;">${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}</b></div>
                                 <div style="font-size: 12px;">旗子: <b>${sum.leadership || 0}</b></div>
                                 <div style="font-size: 12px;">金券: <b>${sum.rare_tickets || 0}</b></div>
                                 <div style="font-size: 12px;">貓咪: <b style="color: #8e44ad;">${sum.cats_count || 0} 隻</b></div>
@@ -643,7 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
                         <button class="btn-delete-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: #fdf2f2; color: #b91c1c; border: 1px solid #f87171; border-radius: 4px; font-weight: 600; cursor: pointer;">刪除紀錄</button>
-                        <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${record.inquiry_code} (${record.country_code.toUpperCase()} v${record.game_version}) | 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">還原此存檔至新帳號</button>
+                        <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${record.inquiry_code} (${record.country_code.toUpperCase()} v${record.game_version}) | 等級: ${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}, 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">還原此存檔至新帳號</button>
                     </div>
                 `;
                 historyList.appendChild(card);

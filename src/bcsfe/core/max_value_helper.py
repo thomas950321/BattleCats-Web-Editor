@@ -83,7 +83,14 @@ class MaxValueHelper:
             "treasure_chests": self.treasure_chests,
         }
 
+    def get(self, key: str) -> int | None:
+        return getattr(self, key, None)
+
+    def get_new(self, key: str) -> int | None:
+        return getattr(self, f"{key}_new", None)
+
     @staticmethod
+
     def from_dict(data: dict[str, int]) -> MaxValueHelper:
         return MaxValueHelper(
             catfood=data.get("catfood", 45000),

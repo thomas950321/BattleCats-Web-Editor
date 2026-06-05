@@ -2,7 +2,11 @@ __version__ = "3.4.0"
 
 __app_name__ = "bcsfe"
 
-from importlib.resources.abc import Traversable
+try:
+    from importlib.resources.abc import Traversable
+except ImportError:
+    from importlib.abc import Traversable
+
 
 from bcsfe import core, cli
 

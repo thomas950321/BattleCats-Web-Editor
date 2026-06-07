@@ -323,7 +323,7 @@ class BCSFE_Service:
             except (ValueError, TypeError):
                 val = 0
             
-            if val < 0:
+            if val <= 0:
                 if hasattr(club, "remove_gold_pass"):
                     club.remove_gold_pass(self.current_save)
             else:

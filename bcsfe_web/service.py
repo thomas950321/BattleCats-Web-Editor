@@ -729,6 +729,11 @@ class BCSFE_Service:
         if getattr(source_save, "tutorial_state", 0) > 0:
             core.StoryChapters.clear_tutorial(target_save)
 
+        # 自動填滿新手登入禮，使其在遊戲內不再彈出
+        if hasattr(target_save, "stamp_data") and target_save.stamp_data is not None:
+            target_save.stamp_data.current_stamp = 30
+            target_save.stamp_data.collected_stamp = [1] * 30
+
         # ── Step 5：重新計算校驗碼 ─────────────────────────────────────
         target_save.set_hash()
 
@@ -846,6 +851,11 @@ class BCSFE_Service:
 
         if getattr(source_save, "tutorial_state", 0) > 0:
             core.StoryChapters.clear_tutorial(target_save)
+
+        # 自動填滿新手登入禮，使其在遊戲內不再彈出
+        if hasattr(target_save, "stamp_data") and target_save.stamp_data is not None:
+            target_save.stamp_data.current_stamp = 30
+            target_save.stamp_data.collected_stamp = [1] * 30
 
         # 5. 重新簽署並上傳
         target_save.set_hash()

@@ -729,10 +729,15 @@ class BCSFE_Service:
         if getattr(source_save, "tutorial_state", 0) > 0:
             core.StoryChapters.clear_tutorial(target_save)
 
-        # 自動填滿新手登入禮，使其在遊戲內不再彈出
+        # 同步新手登入禮狀態：如果來源檔已達30天，強置填滿防止新身分連線重置彈出；否則保留來源檔的實際進度
         if hasattr(target_save, "stamp_data") and target_save.stamp_data is not None:
-            target_save.stamp_data.current_stamp = 30
-            target_save.stamp_data.collected_stamp = [1] * 30
+            src_stamp = getattr(source_save, "stamp_data", None)
+            if src_stamp is not None and src_stamp.current_stamp >= 30:
+                target_save.stamp_data.current_stamp = 30
+                target_save.stamp_data.collected_stamp = [1] * 30
+            elif src_stamp is not None:
+                target_save.stamp_data.current_stamp = src_stamp.current_stamp
+                target_save.stamp_data.collected_stamp = copy.deepcopy(src_stamp.collected_stamp)
 
         # ── Step 5：重新計算校驗碼 ─────────────────────────────────────
         target_save.set_hash()
@@ -852,10 +857,15 @@ class BCSFE_Service:
         if getattr(source_save, "tutorial_state", 0) > 0:
             core.StoryChapters.clear_tutorial(target_save)
 
-        # 自動填滿新手登入禮，使其在遊戲內不再彈出
+        # 同步新手登入禮狀態：如果來源檔已達30天，強置填滿防止新身分連線重置彈出；否則保留來源檔的實際進度
         if hasattr(target_save, "stamp_data") and target_save.stamp_data is not None:
-            target_save.stamp_data.current_stamp = 30
-            target_save.stamp_data.collected_stamp = [1] * 30
+            src_stamp = getattr(source_save, "stamp_data", None)
+            if src_stamp is not None and src_stamp.current_stamp >= 30:
+                target_save.stamp_data.current_stamp = 30
+                target_save.stamp_data.collected_stamp = [1] * 30
+            elif src_stamp is not None:
+                target_save.stamp_data.current_stamp = src_stamp.current_stamp
+                target_save.stamp_data.collected_stamp = copy.deepcopy(src_stamp.collected_stamp)
 
         # 5. 重新簽署並上傳
         target_save.set_hash()

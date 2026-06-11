@@ -184,39 +184,3 @@ def run_diagnosis(sf: core.SaveFile) -> dict:
 
     report["issues"] = issues
     return report
-
-
-def format_report_text(report: dict) -> str:
-    """將 report 字典轉為人類可讀的文字報告（CLI 輸出用）。"""
-    lines = []
-    id_ = report["identity"]
-    act = report["activity"]
-
-    lines.append("=" * 50)
-    lines.append("  Battle Cats 帳號安全診斷報告")
-    lines.append("=" * 50)
-    lines.append(f"查詢碼      : {id_['inquiry_code']} ({id_['account_type_hint']})")
-    lines.append(f"內部存檔日期 : {id_['internal_save_date']}")
-    lines.append(f"遊戲版本    : {id_['game_version']}")
-    lines.append(f"俱樂部加入  : {id_.get('nyanko_club_join_date', 'N/A')}")
-    lines.append("")
-    lines.append("── 活動指標 ─────────────────────────────")
-    lines.append(f"總遊玩時數    : {act['play_time_hours']} 小時")
-    lines.append(f"累計登入天數  : {act['total_logins_days']} 天 (~{act['estimated_age_years']} 年)")
-    lines.append(f"平均每日活動  : {act['avg_hours_per_day']} h/day")
-    lines.append("")
-    lines.append("── 資源快照 ─────────────────────────────")
-    for r in report["resources"]:
-        marker = " !!!" if r["level"] != "SAFE" else ""
-        lines.append(f"{r['name']:10} : {r['value']:>7,}  (上限 {r['limit']:,}){marker}")
-    lines.append("")
-    lines.append("── 風險評估 ─────────────────────────────")
-    if not report["issues"]:
-        lines.append("  [SAFE] 未發現異常。")
-    for issue in report["issues"]:
-        lines.append(f"  [{issue['level']}] {issue['category']}：{issue['message']}")
-    lines.append("")
-    verdict_map = {"SAFE": "✅ 安全", "WARNING": "⚠ 需關注", "CRITICAL": "🚨 高風險"}
-    lines.append(f"最終裁決：{verdict_map.get(report['verdict'], report['verdict'])}")
-    lines.append("=" * 50)
-    return "\n".join(lines)

@@ -63,7 +63,7 @@ class CatEditor:
             dialog_creator.Actions[tuple[Optional[list[core.Cat]], bool]]
             .new()
             .add_new_key(
-                "select_cats_all", lambda _: (self.save_file.cats.get_all_cats(), False)
+                "select_cats_all", lambda _: ([cat for cat in self.save_file.cats.get_all_cats() if cat.id != 673], False)
             )
             .add_new_key(
                 "select_cats_current", lambda _: (self.get_current_cats(), False)

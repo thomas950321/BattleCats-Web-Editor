@@ -6,12 +6,11 @@ from fastapi import FastAPI, HTTPException, Request, Header
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 # pyrefly: ignore [missing-import]
-from bcsfe_web.models import SaveLogin, ItemUpdate, SaveDataResponse, SavePatchRequest, TransplantRequest, RestoreRequest
+from bcsfe_web.models import SaveLogin, SavePatchRequest, TransplantRequest, RestoreRequest
 # pyrefly: ignore [missing-import]
 from bcsfe_web.service import session_manager, BCSFE_Service
 from bcsfe_web import scanner
 import uvicorn
-import os
 import traceback
 import sys
 

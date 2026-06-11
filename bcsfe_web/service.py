@@ -370,22 +370,26 @@ class BCSFE_Service:
         if cat_opts:
             if cat_opts.get("unlock_all"):
                 for cat in self.current_save.cats.cats:
+                    if cat.id == 673:
+                        continue
                     cat.unlock(self.current_save)
             if cat_opts.get("max_level"):
                 max_lv = core.Upgrade(base=80, plus=0)
                 for cat in self.current_save.cats.cats:
+                    if cat.id == 673:
+                        continue
                     if cat.unlocked:
                         cat.set_upgrade(self.current_save, max_lv)
             if cat_opts.get("true_form"):
-                for cat in self.current_save.cats.cats:
-                    if cat.unlocked:
-                        cat.set_form(2, self.current_save)
+                cats_to_modify = [cat for cat in self.current_save.cats.cats if cat.unlocked and cat.id != 673]
+                self.current_save.cats.true_form_cats(self.current_save, cats_to_modify, force=False, set_current_forms=True)
             if cat_opts.get("fourth_form"):
-                for cat in self.current_save.cats.cats:
-                    if cat.unlocked:
-                        cat.set_form(3, self.current_save)
+                cats_to_modify = [cat for cat in self.current_save.cats.cats if cat.unlocked and cat.id != 673]
+                self.current_save.cats.fourth_form_cats(self.current_save, cats_to_modify, force=False, set_current_forms=True)
             if cat_opts.get("max_talents"):
                 for cat in self.current_save.cats.cats:
+                    if cat.id == 673:
+                        continue
                     if cat.unlocked and cat.talents:
                         for talent in cat.talents:
                             talent.level = 10
@@ -477,10 +481,14 @@ class BCSFE_Service:
         if special_opts:
             if special_opts.get("all_cat_full"):
                 max_lv = core.Upgrade(base=80, plus=0)
+                cats_to_modify = []
                 for cat in self.current_save.cats.cats:
+                    if cat.id == 673:
+                        continue
                     cat.unlock(self.current_save)
                     cat.set_upgrade(self.current_save, max_lv)
-                    cat.set_form(3, self.current_save)
+                    cats_to_modify.append(cat)
+                self.current_save.cats.fourth_form_cats(self.current_save, cats_to_modify, force=False, set_current_forms=True)
             if special_opts.get("max_tech_full"):
                 max_tech = core.Upgrade(base=30, plus=10)
                 for skill in self.current_save.special_skills.skills:
@@ -678,7 +686,7 @@ class BCSFE_Service:
                 if not hasattr(source_save, field):
                     try:
                         delattr(target_save, field)
-                    except Exception as e:
+                    except Exception:
                         pass
 
         # ── Step 4：數據指紋清理 (Data Scrubbing) ──────────────────────
@@ -808,7 +816,7 @@ class BCSFE_Service:
                 if not hasattr(source_save, field):
                     try:
                         delattr(target_save, field)
-                    except Exception as e:
+                    except Exception:
                         pass
 
         # 4. 資料指紋清理

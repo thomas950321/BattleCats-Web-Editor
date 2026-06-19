@@ -15,7 +15,11 @@ pinned: false
 
 這是基於 [BCSFE-Python](https://github.com/fieryhenry/BCSFE-Python) 核心所開發的**視覺化網頁修改器**。它結合了強大的 Python 後端邏輯與現代化的 Web 前端介面，讓你在瀏覽器中就能輕鬆管理與修改《貓咪大戰爭》的存檔。
 
----
+Please submit issues and pull requests on [codeberg](https://codeberg.org/fieryhenry/BCSFE-Python)
+
+Join the [discord server](https://discord.gg/DvmMgvn5ZB) if you want to suggest
+new features, report bugs or get help on how to use the editor (please read the
+below tutorials first before asking for help).
 
 ## ✨ 專案特色 (Features)
 

@@ -52,8 +52,6 @@ class SaveFile:
         else:
             self.cc = detected_cc
 
-        self.used_storage = False
-
         self.localizable: core.Localizable | None = None
 
         self.init_save(gv)
@@ -1236,6 +1234,8 @@ class SaveFile:
             if self.game_version >= 150300:
                 self.ui24 = self.data.read_int()
                 self.ub38 = self.data.read_bool()
+            if self.game_version >= 150500:
+                self.ub39 = self.data.read_bool()
 
             self.ub36 = self.data.read_bool()
 
@@ -2212,6 +2212,8 @@ class SaveFile:
             if self.game_version >= 150300:
                 self.data.write_int(self.ui24)
                 self.data.write_bool(self.ub38)
+            if self.game_version >= 150500:
+                self.data.write_bool(self.ub39)
 
             self.data.write_bool(self.ub36)
 
@@ -2585,6 +2587,7 @@ class SaveFile:
             "uil13": self.uil13,
             "ub37": self.ub37,
             "ub38": self.ub38,
+            "ub39": self.ub39,
             "ui24": self.ui24,
             "remaining_data": base64.b64encode(self.remaining_data).decode("utf-8"),
         }
@@ -2973,6 +2976,7 @@ class SaveFile:
         save_file.uil13 = data.get("uil13", [])
         save_file.ub37 = data.get("ub37", False)
         save_file.ub38 = data.get("ub38", False)
+        save_file.ub39 = data.get("ub39", False)
         save_file.ui24 = data.get("ui24", 0)
 
         save_file.remaining_data = base64.b64decode(data.get("remaining_data", ""))
@@ -3026,6 +3030,7 @@ class SaveFile:
         self.ub36 = False
         self.ub37 = False
         self.ub38 = False
+        self.ub39 = False
 
         self.mute_bgm = False
         self.mute_se = False

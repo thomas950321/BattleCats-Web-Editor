@@ -1,19 +1,20 @@
-__version__ = "3.5.1"
+from __future__ import annotations
+
+__version__ = "3.5.2"
 
 __app_name__ = "bcsfe"
 
 try:
     from importlib.resources.abc import Traversable
 except ImportError:
-    from importlib.abc import Traversable
-
+    pass
 
 from bcsfe import core, cli
 
 __all__ = ["core", "cli"]
 
 
-def copy_to_data_dir(base_path: Traversable, path: Traversable):
+def copy_to_data_dir(base_path: "Traversable", path: "Traversable"):
     if path.is_dir():
         for item in path.iterdir():
             copy_to_data_dir(base_path, item)

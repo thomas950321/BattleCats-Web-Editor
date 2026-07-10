@@ -2,8 +2,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, TypeVar
 
+from bcsfe import __app_name__
+
 from bcsfe.cli import color, dialog_creator
 
+from bcsfe.cli.main import Main
 from bcsfe.core import (
     country_code,
     crypto,
@@ -317,6 +320,7 @@ print_config_err = True
 log_path = None
 transfer_backup_path = None
 game_data_path = None
+data_dir_path: Path | None = None
 
 
 def set_config_path(path: Path):
@@ -327,6 +331,11 @@ def set_config_path(path: Path):
 def set_game_data_path(path: Path):
     global game_data_path
     game_data_path = path
+
+
+def set_data_dir_path(path: Path):
+    global data_dir_path
+    data_dir_path = path
 
 
 def set_log_path(path: Path):
@@ -350,11 +359,18 @@ def get_game_data_path() -> Path | None:
 def update_external_content(_: Any = None):
     """Updates external content."""
 
+    color.color_print_key("checking_bcsfe_update", app_name=__app_name__)
+    Main.check_update()
+
+    print()
+
     color.color_print_key("updating_external_content")
     print()
     ExternalThemeManager.update_all_external_themes()
     ExternalLocaleManager.update_all_external_locales()
     core_data.init_data()
+
+    print()
 
     clear_game_data = dialog_creator.yes_no_key("clear_game_data_q")
     if clear_game_data is None:
@@ -520,4 +536,6 @@ __all__ = [
     "GameDataGetter",
     "ExternalThemeManager",
     "ExternalLocaleManager",
+    "Config",
+    "Logger",
 ]

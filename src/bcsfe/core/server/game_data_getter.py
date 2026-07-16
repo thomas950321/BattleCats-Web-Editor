@@ -11,10 +11,13 @@ from bcsfe import core
 
 
 class GameDataGetter:
+    @staticmethod
+    def repo_url() -> str:
+        return core.core_data.config.get_game_data_repo()
+
     def __init__(
         self, cc: core.CountryCode, gv: core.GameVersion, do_print: bool = True
     ):
-        self.repo_url = core.core_data.config.get_game_data_repo()
         self.print = do_print
         self.lang = core.core_data.config.get_str(core.ConfigKey.LOCALE)
         self.cc = cc.get_cc_lang()
@@ -30,30 +33,25 @@ class GameDataGetter:
         if exact_match:
             return
 
-        self.metadata = self.get_metadata()
+        self.metadata = GameDataGetter.get_metadata()
         if self.metadata is None:
             return
-        self.all_versions = self.get_versions(self.metadata)
+        self.all_versions = GameDataGetter.get_versions(self.metadata)
         self.url = self.metadata.get("base_url")
-        if self.all_versions is not None:
-            self.version, self.filepath = self.get_version(self.all_versions, self.cc)
+        self.version, self.filepath = self.get_version(self.all_versions, self.cc)
 
     def find_gv(
         self, cc: core.CountryCode, gv: core.GameVersion
     ) -> tuple[str | None, bool]:
-        versions = GameDataGetter.get_all_downloaded_versions().get(cc.get_code())
+        versions = GameDataGetter.get_all_downloaded_versions().get(cc)
         if versions is None:
             return None, False
 
-        versions_int = [
-            core.GameVersion.from_string(version).game_version for version in versions
-        ]
+        versions.sort()
 
-        versions_int.sort()
-
-        for version in versions_int:
-            if version >= gv.game_version:
-                return core.GameVersion(version).to_string(), version == gv.game_version
+        for version in versions:
+            if version >= gv:
+                return version.to_string(), version == gv
         return None, False
 
     def does_save_version_match(self, save_file: core.SaveFile) -> bool:
@@ -83,11 +81,23 @@ class GameDataGetter:
             return cc_version_keys[-1], cc_versions[cc_version_keys[-1]]
         return gv_string, cc_versions[gv_string]
 
-    def get_metadata(self, show_alt: bool = True) -> dict[str, Any] | None:
-        response = core.RequestHandler(self.repo_url).get()
+    @staticmethod
+    def possible_versions(cc: core.CountryCode) -> list[str] | None:
+        metadata = GameDataGetter.get_metadata()
+
+        if metadata is None:
+            return None
+
+        return [
+            gv for gv in GameDataGetter.get_versions(metadata).get(cc.get_code(), {})
+        ]
+
+    @staticmethod
+    def get_metadata(show_alt: bool = True) -> dict[str, Any] | None:
+        response = core.RequestHandler(GameDataGetter.repo_url()).get()
         if response is None:
             if (
-                self.repo_url
+                GameDataGetter.repo_url()
                 == core.core_data.config.get_default(core.ConfigKey.GAME_DATA_REPO)
                 and show_alt
             ):
@@ -95,8 +105,7 @@ class GameDataGetter:
                 res = dialog_creator.yes_no_key("use_alternative_repo", repo=alt)
                 if res:
                     core.core_data.config.set(core.ConfigKey.GAME_DATA_REPO, alt)
-                    self.repo_url = alt
-                    return self.get_metadata(show_alt=False)
+                    return GameDataGetter.get_metadata(show_alt=False)
 
             return None
         try:
@@ -106,8 +115,9 @@ class GameDataGetter:
             return None
         return data
 
-    def get_versions(self, metdata: dict[str, Any]) -> dict[str, dict[str, str]] | None:
-        return metdata.get("versions")
+    @staticmethod
+    def get_versions(metdata: dict[str, Any]) -> dict[str, dict[str, str]]:
+        return metdata.get("versions", {})
 
     def get_packname(self, packname: str) -> str:
         if packname != "resLocal":
@@ -148,7 +158,7 @@ class GameDataGetter:
             return None
 
         archive = tarfile.open(
-            name=self.filepath, fileobj=BytesIO(downloaded_data.content)
+            name=None, mode="r:xz", fileobj=BytesIO(downloaded_data.content)
         )
 
         outdir = (
@@ -182,11 +192,9 @@ class GameDataGetter:
         if path.exists():
             return path.read()
         else:
-            if self.has_downloaded():
-                return True
-            if self.download_version_data() is None:
-                return False
-
+            res = self.try_download()
+            if res is not None:
+                return res
             path = self.get_file_path(pack_name, file_name)
             if path is None:
                 return False
@@ -194,6 +202,12 @@ class GameDataGetter:
             if path.exists():
                 return path.read()
             return self.has_downloaded()
+
+    def try_download(self) -> bool | None:
+        if self.has_downloaded():
+            return True
+        if self.download_version_data() is None:
+            return False
 
     def save_file(self, pack_name: str, file_name: str) -> core.Data | bool:
         pack_name = self.get_packname(pack_name)
@@ -308,23 +322,38 @@ class GameDataGetter:
         return data_list
 
     @staticmethod
-    def get_all_downloaded_versions() -> dict[str, list[str]]:
-        versions: dict[str, list[str]] = {}
-        for cc in core.CountryCode.get_all_str():
-            dir = GameDataGetter.get_game_data_dir().add(cc)
-            if not dir.exists():
+    def get_downloaded_versions_region(cc: core.CountryCode) -> list[core.GameVersion]:
+        versions: list[core.GameVersion] = []
+        cc_str = cc.get_code()
+        dir = GameDataGetter.get_game_data_dir().add(cc_str)
+        if not dir.exists():
+            return versions
+        for version in GameDataGetter.get_game_data_dir().add(cc_str).get_dirs():
+            if not version.exists():
                 continue
-            for version in GameDataGetter.get_game_data_dir().add(cc).get_dirs():
-                if not version.exists():
-                    continue
-                if not version.add("downloaded").exists():
-                    continue
-                if cc in versions:
-                    versions[cc].append(version.basename())
-                else:
-                    versions[cc] = [version.basename()]
+            if not version.add("downloaded").exists():
+                continue
+            versions.append(core.GameVersion.from_string(version.basename()))
 
         return versions
+
+    @staticmethod
+    def get_all_downloaded_versions() -> dict[core.CountryCode, list[core.GameVersion]]:
+        versions: dict[core.CountryCode, list[core.GameVersion]] = {}
+        for cc in core.CountryCode.get_all():
+            versions[cc] = GameDataGetter.get_downloaded_versions_region(cc)
+
+        return versions
+
+    @staticmethod
+    def delete(cc: core.CountryCode, gv: core.GameVersion):
+        path = GameDataGetter.get_game_data_dir().add(cc.get_code()).add(gv.to_string())
+        path.remove()
+
+    @staticmethod
+    def delete_region(cc: core.CountryCode):
+        path = GameDataGetter.get_game_data_dir().add(cc.get_code())
+        path.remove()
 
     @staticmethod
     def delete_old_versions(to_keep: int) -> None:
@@ -333,8 +362,7 @@ class GameDataGetter:
             cc_versions.sort(reverse=True)
             to_keep = min(to_keep, len(cc_versions))
             for version in cc_versions[to_keep:]:
-                path = GameDataGetter.get_game_data_dir().add(cc).add(version)
-                path.remove()
+                GameDataGetter.delete(cc, version)
 
     def print_no_file(self, packname: str, file_name: str) -> None:
         if self.version is None:

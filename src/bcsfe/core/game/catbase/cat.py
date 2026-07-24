@@ -491,6 +491,16 @@ class UnitBuy:
             return -1
         return unit_buy.rarity
 
+    def filter_rarity(self, rarity: int) -> list[int] | None:
+        if self.unit_buy is None:
+            return None
+        ids: list[int] = []
+        for i, cat in enumerate(self.unit_buy):
+            if cat.rarity == rarity:
+                ids.append(i)
+
+        return ids
+
 
 class UnitLimitCatData:
     def __init__(self, cat_id: int, values: list[int]):

@@ -82,3 +82,50 @@ class Updater:
 
     def has_enabled_pre_release(self) -> bool:
         return core.core_data.config.get_bool(core.ConfigKey.UPDATE_TO_BETA)
+
+    @staticmethod
+    def version_check(v1: str, v2: str) -> bool:
+        v1_p = v1.split(".")
+        v2_p = v2.split(".")
+
+        for p1, p2 in zip(v1_p, v2_p):
+            if p1.isdigit():
+                p1 = int(p1)
+            else:
+                continue
+            if p2.isdigit():
+                p2 = int(p2)
+            else:
+                continue
+            if p1 > p2:
+                return True
+            if p1 < p2:
+                return False
+
+        return len(v1_p) > len(v2_p)
+
+    @staticmethod
+    def beta_version_check(v1: str, v2: str) -> bool:
+        is_local_beta = "b" in v2
+        is_latest_beta = "b" in v1
+
+        local_no_beta = v2.split("b")[0]
+        latest_no_beta = v1.split("b")[0]
+
+        if Updater.version_check(latest_no_beta, local_no_beta):
+            return True
+        elif Updater.version_check(local_no_beta, latest_no_beta):
+            return False
+        else:
+            if v1 == v2:
+                return False
+            else:
+                if is_local_beta and is_latest_beta:
+                    return Updater.version_check(
+                        v1.replace("b", "."),
+                        v2.replace("b", "."),
+                    )
+                elif is_local_beta:
+                    return True
+                else:
+                    return False

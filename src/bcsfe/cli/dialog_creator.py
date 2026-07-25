@@ -183,6 +183,11 @@ def range_multi_input_raw(dialog: str, max: MaxValue, min: int = 0) -> list[int]
     if usr_input == core.localize("quit_key"):
         return None
 
+    usr_input = usr_input.strip()
+
+    if usr_input.lower() == core.localize("all").lower():
+        return list(range(min, max.max))
+
     nums: list[int] = []
     for part in usr_input.split(" "):
         if part.isdigit():

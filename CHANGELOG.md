@@ -1,5 +1,37 @@
 # Changelog
 
+## [3.6.0] - 2026-07-24
+
+### Added
+
+- Command line argument to change where the editor stores it's data
+
+- Option to manage downloaded game data, you can view, download or remove game data
+
+### Changed
+
+- Version checking no longer occurs immediately when you open the editor. You now need to run the
+`Check for updates` feature to see if an update is available. This means the editor will launch faster
+for people with slow internet connection and avoids uneccessary network requests.
+
+- The editor will now try to upload the save data 3 times before displaying an error
+
+- The view missing locale keys option will also display any keys that don't have the correct number
+of keyword argument placeholders
+
+### Fixed
+
+- The editor still importing `tk` even when it is disabled in the config
+
+- Timed score editing crashing the editor
+
+- Issue with the editor crashing on some HTTP requests if you set the timeout too high or too small
+
+- Select map names returning incorrect ids
+
+- Entering `all` now works for more range inputs
+
+
 ## [3.5.2] - 2026-07-06
 
 ### Added

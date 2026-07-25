@@ -51,27 +51,6 @@ class Main:
         )
 
     @staticmethod
-    def version_check(v1: str, v2: str) -> bool:
-        v1_p = v1.split(".")
-        v2_p = v2.split(".")
-
-        for p1, p2 in zip(v1_p, v2_p):
-            if p1.isdigit():
-                p1 = int(p1)
-            else:
-                continue
-            if p2.isdigit():
-                p2 = int(p2)
-            else:
-                continue
-            if p1 > p2:
-                return True
-            if p1 < p2:
-                return False
-
-        return len(v1_p) > len(v2_p)
-
-    @staticmethod
     def check_update():
         """Check for updates."""
 
@@ -90,31 +69,7 @@ class Main:
             latest_version=latest_version,
         )
 
-        is_local_beta = "b" in local_version
-        is_latest_beta = "b" in latest_version
-
-        local_no_beta = local_version.split("b")[0]
-        latest_no_beta = latest_version.split("b")[0]
-
-        if Main.version_check(latest_no_beta, local_no_beta):
-            update_needed = True
-        elif Main.version_check(local_no_beta, latest_no_beta):
-            update_needed = False
-        else:
-            if latest_version == local_version:
-                update_needed = False
-            else:
-                if is_local_beta and is_latest_beta:
-                    update_needed = Main.version_check(
-                        latest_version.replace("b", "."),
-                        local_version.replace("b", "."),
-                    )
-                elif is_local_beta:
-                    update_needed = True
-                else:
-                    update_needed = False
-
-        if update_needed:
+        if core.Updater.beta_version_check(latest_version, local_version):
             update = dialog_creator.yes_no_key(
                 "update_available", latest_version=latest_version
             )

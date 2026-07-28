@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         true_form: document.getElementById('advTrueForm')?.checked || false,
                         fourth_form: document.getElementById('advFourthForm')?.checked || false,
                         max_talents: document.getElementById('advMaxTalents')?.checked || false,
-                        unlock_cat_ids: document.getElementById('advUnlockSingleCat')?.checked ? 
+                        unlock_cat_ids: document.getElementById('advUnlockSingleCat')?.checked ?
                             Array.from(document.querySelectorAll('.cat-unlock-input'))
                                 .map(input => input.value.trim())
                                 .filter(val => val !== '') : null
@@ -499,61 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // 移植帳號按鈕
-    const btnTransplant = document.getElementById('btnTransplant');
-    if (btnTransplant) {
-        btnTransplant.addEventListener('click', async () => {
-            const srcTC = document.getElementById('srcTC').value.trim();
-            const srcCC = document.getElementById('srcCC').value.trim();
-            const dstTC = document.getElementById('dstTC').value.trim();
-            const dstCC = document.getElementById('dstCC').value.trim();
-            const cc = document.getElementById('countryCode').value;
-            const gv = document.getElementById('gameVersion').value.trim();
-
-            if (!srcTC || !srcCC || !dstTC || !dstCC) {
-                showNotification('請填寫來源帳與目標帳的完整代碼', 'error');
-                return;
-            }
-
-            btnTransplant.disabled = true;
-            btnTransplant.textContent = '移植中...';
-
-            try {
-                const res = await fetch('/save/transplant', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        source_transfer_code: srcTC,
-                        source_confirmation_code: srcCC,
-                        target_transfer_code: dstTC,
-                        target_confirmation_code: dstCC,
-                        country_code: cc,
-                        game_version: gv,
-                    })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || '移植失敗');
-
-                localStorage.setItem('last_transfer_code', data.new_transfer_code);
-                localStorage.setItem('last_conf_code', data.new_confirmation_code);
-
-                // 移植模式：顯示移植專用的標題與標籤
-                setResultMode(true);
-                resTransferCode.textContent = data.new_transfer_code;
-                resConfCode.textContent = data.new_confirmation_code;
-
-                loginPanel.classList.add('hidden');
-                resultPanel.classList.remove('hidden');
-                showNotification('移植完成！空殼帳現在擁有強帳進度。', 'success');
-
-            } catch (err) {
-                showNotification(err.message || '移植失敗', 'error');
-            } finally {
-                btnTransplant.disabled = false;
-                btnTransplant.textContent = '開始移植';
-            }
-        });
-    }
 
     // --- 歷史存檔資料庫 (後台) 功能 ---
     const navEditor = document.getElementById('nav-editor');
@@ -600,10 +545,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // 釘選的放最上面，未釘選保持原本的時間排序
+            history.sort((a, b) => {
+                const aPinned = a.summary?.is_pinned ? 1 : 0;
+                const bPinned = b.summary?.is_pinned ? 1 : 0;
+                return bPinned - aPinned;
+            });
+
             historyList.innerHTML = '';
             history.forEach(record => {
                 const card = document.createElement('div');
                 card.className = 'sub-section';
+                card.dataset.inquiryCode = record.inquiry_code || '';
                 card.style.marginBottom = '16px';
                 card.style.border = '1px solid var(--border)';
                 card.style.boxShadow = 'var(--shadow)';
@@ -643,11 +596,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                        <button class="btn-pin-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: ${sum.is_pinned ? '#fef08a' : '#f3f4f6'}; color: ${sum.is_pinned ? '#854d0e' : '#4b5563'}; border: 1px solid ${sum.is_pinned ? '#facc15' : '#d1d5db'}; border-radius: 4px; font-weight: 600; cursor: pointer;">
+                            ${sum.is_pinned ? '已釘選' : '釘選'}
+                        </button>
                         <button class="btn-delete-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: #fdf2f2; color: #b91c1c; border: 1px solid #f87171; border-radius: 4px; font-weight: 600; cursor: pointer;">刪除紀錄</button>
                         <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${record.inquiry_code} (${record.country_code.toUpperCase()} v${record.game_version}) | 等級: ${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}, 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">還原此存檔至新帳號</button>
                     </div>
                 `;
                 historyList.appendChild(card);
+            });
+
+            document.querySelectorAll('.btn-pin-record').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const recordId = btn.dataset.id;
+                    try {
+                        const res = await fetch(`/admin/history/${recordId}/pin`, { method: 'POST' });
+                        const resData = await res.json();
+                        if (!res.ok) throw new Error(resData.detail || '切換釘選狀態失敗');
+                        fetchHistory();
+                    } catch (err) {
+                        showNotification(err.message, 'error');
+                    }
+                });
             });
 
             document.querySelectorAll('.btn-delete-record').forEach(btn => {
@@ -679,6 +649,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     formContainer.scrollIntoView({ behavior: 'smooth' });
                 });
             });
+
+            // 如果已有輸入搜尋關鍵字，套用過濾
+            const searchInput = document.getElementById('historySearch');
+            if (searchInput && searchInput.value.trim()) {
+                searchInput.dispatchEvent(new Event('input'));
+            }
 
         } catch (err) {
             historyList.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 20px;">錯誤: ${err.message}</div>`;
@@ -749,4 +725,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const historySearch = document.getElementById('historySearch');
+    if (historySearch) {
+        historySearch.addEventListener('input', (e) => {
+            const keyword = e.target.value.trim().toLowerCase();
+            const cards = document.querySelectorAll('#history-list .sub-section');
+            cards.forEach(card => {
+                const inquiryCode = (card.dataset.inquiryCode || '').toLowerCase();
+                if (inquiryCode.includes(keyword)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
 });

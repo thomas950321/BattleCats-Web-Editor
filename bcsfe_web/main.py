@@ -33,9 +33,16 @@ def get_service_or_404(session_token: str) -> BCSFE_Service:
 # 全域異常處理器
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    err_str = str(exc)
+    user_msg = "伺服器發生未預期的錯誤。"
+    if "sqlite" in err_str.lower() or "database" in err_str.lower() or "no such table" in err_str.lower():
+        user_msg = "資料庫發生錯誤 (可能是資料庫檔案損壞或尚未初始化)。"
+    elif "FailedToLoadError" in err_str or "ValueError" in err_str:
+        user_msg = "存檔解析失敗 (可能是遊戲版本不符或存檔已損毀)。"
+    
     return JSONResponse(
         status_code=500,
-        content={"detail": str(exc), "traceback": traceback.format_exc()},
+        content={"detail": f"{user_msg} 詳細資訊: {err_str}", "traceback": traceback.format_exc()},
     )
 
 # 初始化核心數據
@@ -121,7 +128,7 @@ async def diagnose_save(x_session_token: str = Header(...)):
         report = scanner.run_diagnosis(svc.current_save)
         return {"status": "success", "report": report}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"診斷失敗：{str(e)}")
+        raise HTTPException(status_code=500, detail=f"診斷失敗 (可能是存檔格式異常或資料不齊全)：{str(e)}")
 
 @app.post("/save/upload")
 async def upload_save(x_session_token: str = Header(...)):
@@ -172,7 +179,16 @@ async def get_history():
         history = get_save_history()
         return {"status": "success", "history": history}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"讀取紀錄失敗: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"讀取紀錄失敗 (資料庫可能尚未初始化或檔案損毀): {str(e)}")
+
+@app.post("/admin/history/{record_id}/pin")
+async def toggle_pin(record_id: int):
+    try:
+        from bcsfe_web.database import toggle_pin_record
+        is_pinned = toggle_pin_record(record_id)
+        return {"status": "success", "is_pinned": is_pinned}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"切換釘選狀態失敗 (資料庫錯誤): {str(e)}")
 
 @app.post("/admin/restore")
 async def restore_save(req: RestoreRequest):
@@ -204,7 +220,7 @@ async def delete_record(record_id: int):
         delete_save_record(record_id)
         return {"status": "success", "message": "紀錄已刪除"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"刪除紀錄失敗: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"刪除紀錄失敗 (資料庫錯誤): {str(e)}")
 
 
 if __name__ == "__main__":

@@ -664,32 +664,6 @@
         <button id="btnLogin" class="btn-primary">下載並讀取存檔</button>
         <button id="btnRecoverLastCode" class="btn-danger">找回上次上傳代碼</button>
 
-        <!-- 移植帳號 -->
-        <div class="section-divider"><span>移植帳號</span></div>
-        <p class="transplant-hint">移植後，空殼帳號將擁有強帳的完整進度，且 Inquiry Code 保持不同，完全獨立。</p>
-        <div class="transplant-section">
-          <div class="transplant-label">來源帳（強帳）</div>
-          <div class="form-group">
-            <label for="srcTC">轉移號碼</label>
-            <input type="text" id="srcTC" placeholder="來源帳轉移號碼">
-          </div>
-          <div class="form-group">
-            <label for="srcCC">認證號碼</label>
-            <input type="text" id="srcCC" placeholder="來源帳認證號碼">
-          </div>
-        </div>
-        <div class="transplant-section">
-          <div class="transplant-label">目標帳（空殼）</div>
-          <div class="form-group">
-            <label for="dstTC">轉移號碼</label>
-            <input type="text" id="dstTC" placeholder="空殼帳轉移號碼">
-          </div>
-          <div class="form-group">
-            <label for="dstCC">認證號碼</label>
-            <input type="text" id="dstCC" placeholder="空殼帳認證號碼">
-          </div>
-        </div>
-        <button id="btnTransplant" class="btn-primary">開始移植</button>
 
       </section>
 
@@ -938,6 +912,11 @@
         <p class="transplant-hint" style="margin-bottom: 16px;">
           在此可以查看每次修改上傳後的帳號存檔紀錄。您可以將舊紀錄還原/複製至一個新的空殼帳號中，除詢問碼 (Inquiry Code) 外完全複製進度與等級。
         </p>
+
+        <!-- 搜尋框 -->
+        <div style="margin-bottom: 16px;">
+          <input type="text" id="historySearch" placeholder="請輸入詢問碼 (Inquiry Code) 來搜尋帳號..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; background: #fff;">
+        </div>
 
         <!-- 歷史紀錄列表 -->
         <div id="history-list" class="list" style="margin-bottom: 20px; max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">

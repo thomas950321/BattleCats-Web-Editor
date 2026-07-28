@@ -215,3 +215,25 @@ def delete_save_record(record_id: int):
         cursor.execute("DELETE FROM save_history WHERE id = ?", (record_id,))
         conn.commit()
         conn.close()
+
+def toggle_pin_record(record_id: int):
+    record = get_save_record(record_id)
+    if not record:
+        raise Exception("找不到指定的存檔紀錄")
+    summary = record.get("summary", {})
+    new_pinned = not summary.get("is_pinned", False)
+    summary["is_pinned"] = new_pinned
+    
+    if use_supabase:
+        try:
+            supabase_client.table("save_history").update({"summary": summary}).eq("id", record_id).execute()
+        except Exception as e:
+            print(f"[DATABASE] Supabase update pin failed: {e}", flush=True)
+            raise e
+    else:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE save_history SET summary = ? WHERE id = ?", (json.dumps(summary), record_id))
+        conn.commit()
+        conn.close()
+    return new_pinned

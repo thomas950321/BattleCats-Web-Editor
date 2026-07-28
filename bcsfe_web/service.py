@@ -43,9 +43,9 @@ class BCSFE_Service:
                     import traceback
                     error_detail = traceback.format_exc()
                     print(f"Simulation Load Error: {error_detail}", flush=True)
-                    return False, f"載入測試存檔失敗 (核心錯誤): {str(e)}"
+                    return False, f"載入測試存檔失敗 (存檔可能已損毀或版本不相容): {str(e)}"
             else:
-                return False, f"未找到測試用的 SAVE_DATA 檔案 (嘗試路徑: {target_path})"
+                return False, f"找不到測試用的 SAVE_DATA 檔案 (請確認路徑: {target_path})"
 
         cc = core.CountryCode.from_code(country_code)
         gv = core.GameVersion.from_string(game_version)
@@ -784,7 +784,7 @@ class BCSFE_Service:
             save_bytes = base64.b64decode(save_data_b64)
             source_save = core.SaveFile(dt=core.Data(save_bytes))
         except Exception as e:
-            return None, f"解析儲存的存檔失敗: {str(e)}"
+            return None, f"解析歷史存檔失敗 (資料可能已損壞): {str(e)}"
 
         # 2. 下載目標帳號
         success, msg = await self.login_and_fetch(

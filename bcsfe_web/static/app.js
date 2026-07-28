@@ -519,6 +519,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         navAdmin.addEventListener('click', () => {
+            const pwd = prompt("請輸入密碼以進入歷史存檔資料庫：");
+            if (pwd !== "th95") {
+                alert("密碼錯誤！");
+                return;
+            }
             navAdmin.classList.add('active');
             navEditor.classList.remove('active');
             loginPanel.classList.add('hidden');

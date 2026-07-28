@@ -604,8 +604,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="btn-pin-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: ${sum.is_pinned ? '#fef08a' : '#f3f4f6'}; color: ${sum.is_pinned ? '#854d0e' : '#4b5563'}; border: 1px solid ${sum.is_pinned ? '#facc15' : '#d1d5db'}; border-radius: 4px; font-weight: 600; cursor: pointer;">
                             ${sum.is_pinned ? '已釘選' : '釘選'}
                         </button>
-                        <button class="btn-delete-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: #fdf2f2; color: #b91c1c; border: 1px solid #f87171; border-radius: 4px; font-weight: 600; cursor: pointer;">刪除紀錄</button>
-                        <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${record.inquiry_code} (${record.country_code.toUpperCase()} v${record.game_version}) | 等級: ${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}, 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">還原此存檔至新帳號</button>
+                        <button class="btn-delete-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: #fdf2f2; color: #b91c1c; border: 1px solid #f87171; border-radius: 4px; font-weight: 600; cursor: pointer;">刪除</button>
+                        <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${record.inquiry_code} (${record.country_code.toUpperCase()} v${record.game_version}) | 等級: ${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}, 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">複製</button>
                     </div>
                 `;
                 historyList.appendChild(card);

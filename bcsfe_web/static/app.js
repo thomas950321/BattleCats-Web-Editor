@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         navAdmin.addEventListener('click', () => {
-            const pwd = prompt("請輸入密碼以進入歷史存檔資料庫：");
+            const pwd = prompt("請輸入密碼以進入更多進階功能：");
             if (pwd !== "th95") {
                 alert("密碼錯誤！");
                 return;

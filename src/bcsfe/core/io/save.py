@@ -1257,7 +1257,9 @@ class SaveFile:
 
             self.ub37 = self.data.read_bool()
 
-            assert self.data.read_int() == 140300
+            marker = self.data.read_int()
+            if marker != 140300:
+                raise ValueError(f"Expected 140300, but got {marker} at pos {self.data.pos}. Please share this error!")
 
         self.remaining_data = self.data.read_to_end(32)
 

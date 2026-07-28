@@ -582,7 +582,7 @@ class BCSFE_Service:
                 save_data_b64 = save_file.to_data().to_base_64()
                 inquiry_code = getattr(save_file, "inquiry_code", "")
                 cc = save_file.cc.get_code() if hasattr(save_file, "cc") else "tw"
-                gv = save_file.game_version.to_string() if hasattr(save_file, "game_version") else "15.3.0"
+                gv = save_file.game_version.to_string() if hasattr(save_file, "game_version") else "15.5.0"
                 
                 # 建立歷史存檔摘要以供後台展示
                 summary = {

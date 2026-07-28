@@ -597,6 +597,7 @@ class BCSFE_Service:
                     "legend_tickets": getattr(save_file, "legend_tickets", 0),
                     "play_time": getattr(save_file.officer_pass, "play_time", 0) // 30 // 3600 if hasattr(save_file, "officer_pass") else 0,
                     "cats_count": len([c for c in save_file.cats.cats if c.unlocked]) if hasattr(save_file, "cats") else 0,
+                    "medals_count": len(save_file.medals.medal_data_1) if hasattr(save_file, "medals") and hasattr(save_file.medals, "medal_data_1") else 0,
                 }
 
                 insert_save_history(

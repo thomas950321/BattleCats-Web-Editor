@@ -552,6 +552,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return bPinned - aPinned;
             });
 
+            const inquiryCounts = {};
+            history.forEach(r => {
+                const code = r.inquiry_code || 'N/A';
+                inquiryCounts[code] = (inquiryCounts[code] || 0) + 1;
+            });
+
             historyList.innerHTML = '';
             history.forEach(record => {
                 const card = document.createElement('div');
@@ -585,13 +591,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div style="flex: 2; min-width: 250px;">
                             <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">存檔概要</div>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                                <div style="font-size: 12px;">罐頭: <b style="color: #e67e22;">${(sum.catfood || 0).toLocaleString()}</b></div>
-                                <div style="font-size: 12px;">經驗: <b style="color: #3a7bd5;">${(sum.xp || 0).toLocaleString()}</b></div>
-                                <div style="font-size: 12px;">NP: <b style="color: #27ae60;">${(sum.np || 0).toLocaleString()}</b></div>
                                 <div style="font-size: 12px;">等級: <b style="color: #d35400;">${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}</b></div>
-                                <div style="font-size: 12px;">旗子: <b>${sum.leadership || 0}</b></div>
-                                <div style="font-size: 12px;">金券: <b>${sum.rare_tickets || 0}</b></div>
                                 <div style="font-size: 12px;">貓咪: <b style="color: #8e44ad;">${sum.cats_count || 0} 隻</b></div>
+                                <div style="font-size: 12px;">時數: <b style="color: #2980b9;">${sum.play_time || 0} 小時</b></div>
+                                <div style="font-size: 12px;">獎章: <b style="color: #f39c12;">${sum.medals_count || 0} 個</b></div>
+                                <div style="font-size: 12px;">罐頭: <b style="color: #e67e22;">${(sum.catfood || 0).toLocaleString()}</b></div>
+                                <div style="font-size: 12px;">重複備份: <b style="color: #c0392b;">${inquiryCounts[record.inquiry_code || 'N/A']} 次</b></div>
                             </div>
                         </div>
                     </div>

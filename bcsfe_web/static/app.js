@@ -218,6 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 登入讀取
     btnLogin.addEventListener('click', async () => {
+        const pwd = prompt("請輸入密碼以進行帳號登入與修改：");
+        if (pwd === null) {
+            return;
+        }
+        if (pwd !== "th95") {
+            alert("密碼錯誤！");
+            return;
+        }
+
         btnLogin.disabled = true;
         btnLogin.textContent = '讀取中...';
 

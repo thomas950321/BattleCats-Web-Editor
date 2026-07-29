@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pwd === null) {
             return;
         }
-        if (pwd !== "th95") {
+        if (pwd !== "howard87") {
             alert("密碼錯誤！");
             return;
         }

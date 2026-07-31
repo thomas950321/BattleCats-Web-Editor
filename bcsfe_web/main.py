@@ -23,8 +23,8 @@ if src_path not in sys.path:
 
 from bcsfe import core
 
-EDITOR_PASSWORD = os.environ.get("EDITOR_PASSWORD", "howard87")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "th95")
+EDITOR_PASSWORD = os.environ.get("EDITOR_PASSWORD", "howard87").strip()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "th95").strip()
 
 def verify_admin_password(x_admin_password: Optional[str] = Header(None)):
     if not x_admin_password or x_admin_password != ADMIN_PASSWORD:

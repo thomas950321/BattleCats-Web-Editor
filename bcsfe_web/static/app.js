@@ -557,15 +557,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('admin_password', pwd);
             }
 
-            const success = await fetchHistory();
-            if (success) {
+            const status = await fetchHistory();
+            if (status === 'success' || status === 'db_error') {
                 navAdmin.classList.add('active');
                 navEditor.classList.remove('active');
                 loginPanel.classList.add('hidden');
                 dashboard.classList.add('hidden');
                 resultPanel.classList.add('hidden');
                 adminPanel.classList.remove('hidden');
-            } else {
+            } else if (status === 'auth_error') {
                 sessionStorage.removeItem('admin_password');
             }
         });
@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchHistory() {
         const historyList = document.getElementById('history-list');
-        if (!historyList) return false;
+        if (!historyList) return 'error';
         historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">載入中...</div>';
 
         try {
@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.removeItem('admin_password');
                 showNotification('管理員密碼錯誤，請重新確認', 'error');
                 navEditor.click();
-                return false;
+                return 'auth_error';
             }
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || '獲取歷史紀錄失敗');
@@ -595,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const history = data.history || [];
             if (history.length === 0) {
                 historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 30px; border: 1px dashed var(--border); border-radius: 8px; background: #fafbfc;">目前無存檔紀錄</div>';
-                return;
+                return 'success';
             }
 
             // 釘選的放最上面，未釘選保持原本的時間排序
@@ -724,8 +724,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchInput.dispatchEvent(new Event('input'));
             }
 
+            return 'success';
         } catch (err) {
             historyList.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 20px;">錯誤: ${err.message}</div>`;
+            return 'db_error';
         }
     }
 

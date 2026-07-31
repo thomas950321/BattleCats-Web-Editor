@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, Request, Header
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Request, Header, Depends
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 # pyrefly: ignore [missing-import]
@@ -21,6 +22,13 @@ if src_path not in sys.path:
     sys.path.append(src_path)
 
 from bcsfe import core
+
+EDITOR_PASSWORD = os.environ.get("EDITOR_PASSWORD", "howard87")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "th95")
+
+def verify_admin_password(x_admin_password: Optional[str] = Header(None)):
+    if not x_admin_password or x_admin_password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="密碼錯誤，拒絕存取")
 
 app = FastAPI(title="BCSFE Web Interface API")
 
@@ -71,7 +79,9 @@ async def root():
     return FileResponse(os.path.join(static_path, "index.html"))
 
 @app.post("/login")
-async def login(credentials: SaveLogin):
+async def login(credentials: SaveLogin, x_editor_password: Optional[str] = Header(None)):
+    if not x_editor_password or x_editor_password != EDITOR_PASSWORD:
+        raise HTTPException(status_code=401, detail="密碼錯誤，拒絕存取")
     session_id = session_manager.create()
     svc = session_manager.get(session_id)
     success, message = await svc.login_and_fetch(
@@ -171,7 +181,7 @@ async def transplant_save(req: TransplantRequest):
         session_manager.delete(session_id)
 
 
-@app.get("/admin/history")
+@app.get("/admin/history", dependencies=[Depends(verify_admin_password)])
 async def get_history():
     try:
         # pyrefly: ignore [missing-import]
@@ -181,7 +191,7 @@ async def get_history():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"讀取紀錄失敗 (資料庫可能尚未初始化或檔案損毀): {str(e)}")
 
-@app.post("/admin/history/{record_id}/pin")
+@app.post("/admin/history/{record_id}/pin", dependencies=[Depends(verify_admin_password)])
 async def toggle_pin(record_id: int):
     try:
         from bcsfe_web.database import toggle_pin_record
@@ -190,7 +200,7 @@ async def toggle_pin(record_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"切換釘選狀態失敗 (資料庫錯誤): {str(e)}")
 
-@app.post("/admin/restore")
+@app.post("/admin/restore", dependencies=[Depends(verify_admin_password)])
 async def restore_save(req: RestoreRequest):
     session_id = session_manager.create()
     svc = session_manager.get(session_id)
@@ -212,7 +222,7 @@ async def restore_save(req: RestoreRequest):
     finally:
         session_manager.delete(session_id)
 
-@app.delete("/admin/history/{record_id}")
+@app.delete("/admin/history/{record_id}", dependencies=[Depends(verify_admin_password)])
 async def delete_record(record_id: int):
     try:
         # pyrefly: ignore [missing-import]

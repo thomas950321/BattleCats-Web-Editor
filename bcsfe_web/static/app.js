@@ -218,13 +218,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 登入讀取
     btnLogin.addEventListener('click', async () => {
-        const pwd = prompt("請輸入密碼以進行帳號登入與修改：");
-        if (pwd === null) {
-            return;
-        }
-        if (pwd !== "howard87") {
-            alert("密碼錯誤！");
-            return;
+        let pwd = sessionStorage.getItem('editor_password');
+        if (!pwd) {
+            pwd = prompt("請輸入密碼以進行帳號登入與修改：");
+            if (pwd === null) {
+                return;
+            }
+            if (!pwd.trim()) {
+                alert("密碼不能為空！");
+                return;
+            }
+            pwd = pwd.trim();
         }
 
         btnLogin.disabled = true;
@@ -247,12 +251,23 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Editor-Password': pwd
+                },
                 body: JSON.stringify(payload)
             });
+
+            if (response.status === 401) {
+                sessionStorage.removeItem('editor_password');
+                showNotification('密碼錯誤，請重新確認', 'error');
+                return;
+            }
+
             const result = await response.json();
 
             if (result.status === 'success') {
+                sessionStorage.setItem('editor_password', pwd);
                 sessionToken = result.session_token;
                 showNotification('存檔讀取成功！');
                 loginPanel.classList.add('hidden');
@@ -527,29 +542,53 @@ document.addEventListener('DOMContentLoaded', () => {
             resultPanel.classList.add('hidden');
         });
 
-        navAdmin.addEventListener('click', () => {
-            const pwd = prompt("請輸入密碼以進入更多進階功能：");
-            if (pwd !== "th95") {
-                alert("密碼錯誤！");
-                return;
+        navAdmin.addEventListener('click', async () => {
+            let pwd = sessionStorage.getItem('admin_password');
+            if (!pwd) {
+                pwd = prompt("請輸入密碼以進入更多進階功能：");
+                if (pwd === null) {
+                    return;
+                }
+                if (!pwd.trim()) {
+                    alert("密碼不能為空！");
+                    return;
+                }
+                pwd = pwd.trim();
+                sessionStorage.setItem('admin_password', pwd);
             }
-            navAdmin.classList.add('active');
-            navEditor.classList.remove('active');
-            loginPanel.classList.add('hidden');
-            dashboard.classList.add('hidden');
-            resultPanel.classList.add('hidden');
-            adminPanel.classList.remove('hidden');
-            fetchHistory();
+
+            const success = await fetchHistory();
+            if (success) {
+                navAdmin.classList.add('active');
+                navEditor.classList.remove('active');
+                loginPanel.classList.add('hidden');
+                dashboard.classList.add('hidden');
+                resultPanel.classList.add('hidden');
+                adminPanel.classList.remove('hidden');
+            } else {
+                sessionStorage.removeItem('admin_password');
+            }
         });
     }
 
     async function fetchHistory() {
         const historyList = document.getElementById('history-list');
-        if (!historyList) return;
+        if (!historyList) return false;
         historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">載入中...</div>';
 
         try {
-            const res = await fetch('/admin/history');
+            const adminPwd = sessionStorage.getItem('admin_password');
+            const res = await fetch('/admin/history', {
+                headers: {
+                    'X-Admin-Password': adminPwd || ''
+                }
+            });
+            if (res.status === 401) {
+                sessionStorage.removeItem('admin_password');
+                showNotification('管理員密碼錯誤，請重新確認', 'error');
+                navEditor.click();
+                return false;
+            }
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || '獲取歷史紀錄失敗');
 
@@ -629,7 +668,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', async () => {
                     const recordId = btn.dataset.id;
                     try {
-                        const res = await fetch(`/admin/history/${recordId}/pin`, { method: 'POST' });
+                        const res = await fetch(`/admin/history/${recordId}/pin`, { 
+                            method: 'POST',
+                            headers: {
+                                'X-Admin-Password': sessionStorage.getItem('admin_password') || ''
+                            }
+                        });
                         const resData = await res.json();
                         if (!res.ok) throw new Error(resData.detail || '切換釘選狀態失敗');
                         fetchHistory();
@@ -644,7 +688,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const recordId = btn.dataset.id;
                     if (!confirm('確定要刪除這筆存檔備份紀錄嗎？此動作無法復原。')) return;
                     try {
-                        const delRes = await fetch(`/admin/history/${recordId}`, { method: 'DELETE' });
+                        const delRes = await fetch(`/admin/history/${recordId}`, { 
+                            method: 'DELETE',
+                            headers: {
+                                'X-Admin-Password': sessionStorage.getItem('admin_password') || ''
+                            }
+                        });
                         const delData = await delRes.json();
                         if (!delRes.ok) throw new Error(delData.detail || '刪除失敗');
                         showNotification('備份紀錄已成功刪除');
@@ -707,7 +756,10 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch('/admin/restore', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Admin-Password': sessionStorage.getItem('admin_password') || ''
+                    },
                     body: JSON.stringify({
                         record_id: parseInt(recordId),
                         target_transfer_code: targetTC,

@@ -3459,9 +3459,7 @@ class SaveFile:
         overwrite: bool = True,
     ):
         if overwrite:
-            for i, order in enumerate(self.order_ids):
-                if order.startswith(SaveFile.get_string_identifier(identifier)):
-                    self.order_ids.pop(i)
+            self.remove_strings(identifier)
 
         for key, value in dictionary.items():
             self.order_ids.append(

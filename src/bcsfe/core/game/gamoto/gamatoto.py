@@ -480,8 +480,10 @@ class Gamatoto:
             rarity_members = members_name.get_all_rarity(i)
             if rarity_members is None:
                 continue
-            for _ in range(rarity_amount):
-                member = rarity_members.pop(0)
+            for i in range(rarity_amount):
+                index = i % len(rarity_members)
+                member = rarity_members[index]
+
                 helpers.append(Helper(member.member_id))
         self.helpers = Helpers(helpers)
 

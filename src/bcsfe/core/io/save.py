@@ -87,7 +87,7 @@ class SaveFile:
         salt = f"battlecats{self.cc.get_patching_code()}"
         return salt
 
-    def get_current_hash(self) -> str:
+    def get_current_hash(self) -> str | None:
         """Get the current hash for the save file. This is used for hashing the save file.
 
         Returns:
@@ -95,7 +95,10 @@ class SaveFile:
         """
         self.data.reset_pos()
         self.data.set_pos(-32)
-        hash = self.data.read_string(32)
+        try:
+            hash = self.data.read_string(32)
+        except UnicodeDecodeError:
+            return None
         return hash
 
     def get_new_hash(self, existing_hash: bool = True) -> str:
@@ -129,7 +132,10 @@ class SaveFile:
         Returns:
             bool: Whether the hash is valid
         """
-        return self.get_current_hash() == self.get_new_hash()
+        current_hash = self.get_current_hash()
+        if current_hash is None:
+            return False
+        return current_hash == self.get_new_hash()
 
     def load_wrapper(self):
         try:

@@ -1,5 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     let sessionToken = null;
+    let editorPassword = null;
+    let adminPassword = null;
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     // 元素引用
     const loginPanel = document.getElementById('login-panel');
@@ -218,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 登入讀取
     btnLogin.addEventListener('click', async () => {
-        let pwd = sessionStorage.getItem('editor_password');
+        let pwd = editorPassword;
         if (!pwd) {
             pwd = prompt("請輸入密碼以進行帳號登入與修改：");
             if (pwd === null) {
@@ -259,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.status === 401) {
-                sessionStorage.removeItem('editor_password');
+                editorPassword = null;
                 showNotification('密碼錯誤，請重新確認', 'error');
                 return;
             }
@@ -267,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.status === 'success') {
-                sessionStorage.setItem('editor_password', pwd);
+                editorPassword = pwd;
                 sessionToken = result.session_token;
                 showNotification('存檔讀取成功！');
                 loginPanel.classList.add('hidden');
@@ -493,11 +504,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 resTransferCode.textContent = result.new_transfer_code;
                 resConfCode.textContent = result.new_confirmation_code;
 
-                // 保存至本地瀏覽器，防止刷新遺失
-                localStorage.setItem('last_transfer_code', result.new_transfer_code);
-                localStorage.setItem('last_conf_code', result.new_confirmation_code);
-
-                showNotification('上傳成功！請保存新碼。');
+                // 不將高敏感轉移碼／認證碼寫入瀏覽器儲存區；只在畫面上顯示一次。
+                showNotification('上傳成功！請立即以安全方式保存新碼。');
             }
         } catch (err) {
             showNotification(err.message || '操作過程發生錯誤', 'error');
@@ -507,18 +515,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 找回上次代碼
+    // 不提供本地代碼找回功能，避免在瀏覽器儲存高敏感認證資料。
     document.getElementById('btnRecoverLastCode').addEventListener('click', () => {
-        const lastTC = localStorage.getItem('last_transfer_code');
-        const lastCC = localStorage.getItem('last_conf_code');
-
-        if (lastTC && lastCC) {
-            document.getElementById('transferCode').value = lastTC;
-            document.getElementById('confCode').value = lastCC;
-            showNotification('已還原上次上傳成功的代碼！');
-        } else {
-            showNotification('未找到任何本地存檔代碼紀錄。', 'error');
-        }
+        showNotification('為安全起見，網站不會在瀏覽器保存上次代碼。', 'warn');
     });
 
 
@@ -543,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         navAdmin.addEventListener('click', async () => {
-            let pwd = sessionStorage.getItem('admin_password');
+            let pwd = adminPassword;
             if (!pwd) {
                 pwd = prompt("請輸入密碼以進入更多進階功能：");
                 if (pwd === null) {
@@ -554,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 pwd = pwd.trim();
-                sessionStorage.setItem('admin_password', pwd);
+                adminPassword = pwd;
             }
 
             const status = await fetchHistory();
@@ -566,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultPanel.classList.add('hidden');
                 adminPanel.classList.remove('hidden');
             } else if (status === 'auth_error') {
-                sessionStorage.removeItem('admin_password');
+                adminPassword = null;
             }
         });
     }
@@ -577,14 +576,13 @@ document.addEventListener('DOMContentLoaded', () => {
         historyList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">載入中...</div>';
 
         try {
-            const adminPwd = sessionStorage.getItem('admin_password');
             const res = await fetch('/admin/history', {
                 headers: {
-                    'X-Admin-Password': adminPwd || ''
+                    'X-Admin-Password': adminPassword || ''
                 }
             });
             if (res.status === 401) {
-                sessionStorage.removeItem('admin_password');
+                adminPassword = null;
                 showNotification('管理員密碼錯誤，請重新確認', 'error');
                 navEditor.click();
                 return 'auth_error';
@@ -630,16 +628,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                         <div>
-                            <span style="font-weight: 700; color: var(--text); font-size: 14px;">詢問碼 ID: ${record.inquiry_code || 'N/A'}</span>
-                            <span style="font-size: 11px; background: #e8f0fe; color: var(--primary); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${record.country_code.toUpperCase()} v${record.game_version}</span>
+                            <span style="font-weight: 700; color: var(--text); font-size: 14px;">詢問碼 ID: ${escapeHtml(record.inquiry_code || 'N/A')}</span>
+                            <span style="font-size: 11px; background: #e8f0fe; color: var(--primary); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${escapeHtml(String(record.country_code || '').toUpperCase())} v${escapeHtml(record.game_version)}</span>
                         </div>
-                        <span style="font-size: 12px; color: var(--muted);">${localTime}</span>
+                        <span style="font-size: 12px; color: var(--muted);">${escapeHtml(localTime)}</span>
                     </div>
                     <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px;">
                         <div style="flex: 1; min-width: 200px;">
                             <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">歷史引繼代碼</div>
-                            <div style="font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px;">轉移: ${record.transfer_code}</div>
-                            <div style="font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text);">認證: ${record.confirmation_code}</div>
+                            <div style="font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px;">轉移: ${escapeHtml(record.transfer_code)}</div>
+                            <div style="font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text);">認證: ${escapeHtml(record.confirmation_code)}</div>
                         </div>
                         <div style="flex: 2; min-width: 250px;">
                             <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">存檔概要</div>
@@ -658,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${sum.is_pinned ? '已釘選' : '釘選'}
                         </button>
                         <button class="btn-delete-record" data-id="${record.id}" style="padding: 6px 12px; font-size: 12px; background: #fdf2f2; color: #b91c1c; border: 1px solid #f87171; border-radius: 4px; font-weight: 600; cursor: pointer;">刪除</button>
-                        <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${record.inquiry_code} (${record.country_code.toUpperCase()} v${record.game_version}) | 等級: ${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}, 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">複製</button>
+                        <button class="btn-restore-record" data-id="${record.id}" data-summary="ID: ${escapeHtml(record.inquiry_code)} (${escapeHtml(String(record.country_code || '').toUpperCase())} v${escapeHtml(record.game_version)}) | 等級: ${sum.user_rank !== undefined ? sum.user_rank.toLocaleString() : 'N/A'}, 罐頭: ${(sum.catfood || 0).toLocaleString()}, 貓咪: ${sum.cats_count || 0} 隻" style="padding: 6px 12px; font-size: 12px; background: #ecfdf5; color: #047857; border: 1px solid #34d399; border-radius: 4px; font-weight: 600; cursor: pointer;">複製</button>
                     </div>
                 `;
                 historyList.appendChild(card);
@@ -671,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const res = await fetch(`/admin/history/${recordId}/pin`, { 
                             method: 'POST',
                             headers: {
-                                'X-Admin-Password': sessionStorage.getItem('admin_password') || ''
+                                'X-Admin-Password': adminPassword || ''
                             }
                         });
                         const resData = await res.json();
@@ -691,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const delRes = await fetch(`/admin/history/${recordId}`, { 
                             method: 'DELETE',
                             headers: {
-                                'X-Admin-Password': sessionStorage.getItem('admin_password') || ''
+                                'X-Admin-Password': adminPassword || ''
                             }
                         });
                         const delData = await delRes.json();
@@ -726,7 +724,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return 'success';
         } catch (err) {
-            historyList.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 20px;">錯誤: ${err.message}</div>`;
+            historyList.textContent = '';
+            const errorBox = document.createElement('div');
+            errorBox.style.cssText = 'text-align: center; color: var(--danger); padding: 20px;';
+            errorBox.textContent = `錯誤: ${err.message || '獲取歷史紀錄失敗'}`;
+            historyList.appendChild(errorBox);
             return 'db_error';
         }
     }
@@ -760,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Admin-Password': sessionStorage.getItem('admin_password') || ''
+                        'X-Admin-Password': adminPassword || ''
                     },
                     body: JSON.stringify({
                         record_id: parseInt(recordId),
@@ -774,8 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || '還原失敗');
 
-                localStorage.setItem('last_transfer_code', data.new_transfer_code);
-                localStorage.setItem('last_conf_code', data.new_confirmation_code);
+                // 還原代碼只在畫面顯示，不寫入瀏覽器儲存區。
 
                 setResultMode(true);
                 if (typeof resultTitle !== 'undefined' && resultTitle) resultTitle.textContent = '存檔還原成功！';

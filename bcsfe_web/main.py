@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, Header, Depends
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 # pyrefly: ignore [missing-import]
 from bcsfe_web.models import SaveLogin, SavePatchRequest, TransplantRequest, RestoreRequest
 # pyrefly: ignore [missing-import]
@@ -23,14 +24,45 @@ if src_path not in sys.path:
 
 from bcsfe import core
 
-EDITOR_PASSWORD = os.environ.get("EDITOR_PASSWORD", "howard87").strip()
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "th95").strip()
+EDITOR_PASSWORD = os.environ.get("EDITOR_PASSWORD")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+
+if not EDITOR_PASSWORD or not ADMIN_PASSWORD:
+    raise RuntimeError("EDITOR_PASSWORD and ADMIN_PASSWORD must be configured")
 
 def verify_admin_password(x_admin_password: Optional[str] = Header(None)):
     if not x_admin_password or x_admin_password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="密碼錯誤，拒絕存取")
 
 app = FastAPI(title="BCSFE Web Interface API")
+
+# Same-origin requests do not need CORS. Cross-origin access is opt-in via an
+# explicit allowlist, never by reflecting the request Origin header.
+_allowed_origins = [
+    origin.strip()
+    for origin in os.environ.get("ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if _allowed_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_allowed_origins,
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "X-Editor-Password", "X-Admin-Password", "X-Session-Token"],
+        expose_headers=[],
+    )
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("Content-Security-Policy", "default-src 'self'; script-src 'self' https://cloud.umami.is; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
 
 def get_service_or_404(session_token: str) -> BCSFE_Service:
     svc = session_manager.get(session_token)
@@ -48,9 +80,11 @@ async def global_exception_handler(request: Request, exc: Exception):
     elif "FailedToLoadError" in err_str or "ValueError" in err_str:
         user_msg = "存檔解析失敗 (可能是遊戲版本不符或存檔已損毀)。"
     
+    request_id = request.headers.get("X-Request-ID", "not-provided")
+    print(f"[ERROR] request_id={request_id} path={request.url.path} error={err_str}", flush=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": f"{user_msg} 詳細資訊: {err_str}", "traceback": traceback.format_exc()},
+        content={"detail": user_msg, "request_id": request_id},
     )
 
 # 初始化核心數據

@@ -10,3 +10,8 @@ src/bcsfe/files/map_names
 pyrightconfig.json
 /test*.py
 /save.json
+
+# Local databases and account-related logs
+bcsfe.db
+uploads_history.log
+*.log

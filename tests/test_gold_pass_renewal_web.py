@@ -23,11 +23,22 @@ class DummyGoldPass(SimpleNamespace):
 
 
 class DummyMaxValues:
-    def get(self, _key):
-        return 99999
-
-    def get_new(self, _key):
-        return 998
+    catfood = 45000
+    xp = 99999999
+    normal_tickets = 2999
+    rare_tickets = 299
+    platinum_tickets = 9
+    legend_tickets = 4
+    np = 9999
+    leadership = 9999
+    battle_items = 9999
+    catamins = 9999
+    catseyes = 9999
+    catfruit_new = 998
+    base_materials = 9999
+    labyrinth_medals = 9999
+    talent_orbs = 998
+    event_tickets = 9999
 
 
 def build_service_with_save():
@@ -82,6 +93,17 @@ def test_get_save_data_includes_gold_pass_renewal_times():
     assert data is not None
     assert data["gold_pass_renewal_times"] == 7
     assert data["play_time"] == 12
+
+
+def test_patch_items_uses_max_value_attributes(monkeypatch):
+    service, _ = build_service_with_save()
+    monkeypatch.setattr(core.core_data, "max_value_manager", DummyMaxValues(), raising=False)
+
+    ok = service.patch_items({"catfood": 999999999, "xp": 12345})
+
+    assert ok is True
+    assert service.current_save.catfood == 45000
+    assert service.current_save.xp == 12345
 
 
 def test_patch_items_updates_gold_pass_renewal_times(monkeypatch):

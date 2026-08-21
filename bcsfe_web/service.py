@@ -222,48 +222,48 @@ class BCSFE_Service:
         # 基礎物資與貨幣
         if "catfood" in updates and updates["catfood"] is not None:
             # 貓罐頭強制上限 45,000 以維護安全
-            self.current_save.catfood = self._clamp(updates["catfood"], max_vals.get("catfood") or 45000)
+            self.current_save.catfood = self._clamp(updates["catfood"], max_vals.catfood)
             
         if "xp" in updates and updates["xp"] is not None:
-            self.current_save.xp = self._clamp(updates["xp"], max_vals.get("xp"))
+            self.current_save.xp = self._clamp(updates["xp"], max_vals.xp)
         if "np" in updates and updates["np"] is not None:
-            self.current_save.np = self._clamp(updates["np"], max_vals.get("np"))
+            self.current_save.np = self._clamp(updates["np"], max_vals.np)
         if "leadership" in updates and updates["leadership"] is not None:
-            self.current_save.leadership = self._clamp(updates["leadership"], max_vals.get("leadership"))
+            self.current_save.leadership = self._clamp(updates["leadership"], max_vals.leadership)
             
         if "normal_tickets" in updates and updates["normal_tickets"] is not None:
-            self.current_save.normal_tickets = self._clamp(updates["normal_tickets"], max_vals.get("normal_tickets"))
+            self.current_save.normal_tickets = self._clamp(updates["normal_tickets"], max_vals.normal_tickets)
         if "rare_tickets" in updates and updates["rare_tickets"] is not None:
             self.current_save.rare_tickets = self._clamp(updates["rare_tickets"], 299)
         if "platinum_tickets" in updates and updates["platinum_tickets"] is not None:
-            self.current_save.platinum_tickets = self._clamp(updates["platinum_tickets"], max_vals.get("platinum_tickets"))
+            self.current_save.platinum_tickets = self._clamp(updates["platinum_tickets"], max_vals.platinum_tickets)
         if "legend_tickets" in updates and updates["legend_tickets"] is not None:
-            self.current_save.legend_tickets = self._clamp(updates["legend_tickets"], max_vals.get("legend_tickets"))
+            self.current_save.legend_tickets = self._clamp(updates["legend_tickets"], max_vals.legend_tickets)
         if "platinum_shards" in updates and updates["platinum_shards"] is not None:
             # 白金碎片上限 99
             self.current_save.platinum_shards = self._clamp(updates["platinum_shards"], 99)
             
         if "battle_items" in updates and updates["battle_items"]:
-            limit = max_vals.get("battle_items")
+            limit = max_vals.battle_items
             for i, val in enumerate(updates["battle_items"]):
                 if i < len(self.current_save.battle_items.items):
                     self.current_save.battle_items.items[i].amount = self._clamp(val, limit)
                     
         if "catseyes" in updates and updates["catseyes"]:
-            limit = max_vals.get("catseyes")
+            limit = max_vals.catseyes
             self.current_save.catseyes = [self._clamp(val, limit) for val in updates["catseyes"]]
             
         if "catfruit" in updates and updates["catfruit"]:
-            limit = max_vals.get_new("catfruit") or 998
+            limit = max_vals.catfruit_new
             self.current_save.catfruit = [self._clamp(val, limit) for val in updates["catfruit"]]
             
         if "catamins" in updates and updates["catamins"]:
-            limit = max_vals.get("catamins")
+            limit = max_vals.catamins
             self.current_save.catamins = [self._clamp(val, limit) for val in updates["catamins"]]
 
         if "base_materials" in updates and updates["base_materials"]:
             materials = self.current_save.ototo.base_materials.materials
-            limit = max_vals.get("base_materials")
+            limit = max_vals.base_materials
             for i, val in enumerate(updates["base_materials"]):
                 if i < len(materials):
                     materials[i].amount = self._clamp(val, limit)
@@ -271,7 +271,7 @@ class BCSFE_Service:
         if "talent_orbs" in updates and updates["talent_orbs"]:
             from bcsfe.core.game.catbase.talent_orbs import OrbInfoList
             orb_info_list = OrbInfoList.create(self.current_save)
-            limit = max_vals.get("talent_orbs") or 998
+            limit = max_vals.talent_orbs
             
             for key, val in updates["talent_orbs"].items():
                 if isinstance(key, str) and key.startswith("ATTR_"):
@@ -297,11 +297,11 @@ class BCSFE_Service:
                             continue
                         
         if "labyrinth_medals" in updates and updates["labyrinth_medals"]:
-            limit = max_vals.get("labyrinth_medals")
+            limit = max_vals.labyrinth_medals
             self.current_save.labyrinth_medals = [self._clamp(val, limit) for val in updates["labyrinth_medals"]]
             
         if "event_lucky_tickets" in updates and updates["event_lucky_tickets"] is not None:
-            limit = max_vals.get("event_tickets")
+            limit = max_vals.event_tickets
             self.current_save.lucky_tickets = [self._clamp(updates["event_lucky_tickets"], limit)]
         
         if "play_time" in updates and updates["play_time"] is not None:

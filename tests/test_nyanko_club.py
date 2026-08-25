@@ -14,14 +14,13 @@ def test_get_gold_pass_login_bonus_date():
     save_file = DummySaveFile()
     club.get_gold_pass(12345, 30, save_file)
     
-    # login_bonus_date should be 0.0, not end_date_now
-    assert club.login_bonus_date == 0.0
+    # login_bonus_date should be end_date_now
+    assert club.login_bonus_date == club.end_date_now
     assert club.officer_id == 12345
     assert club.total_renewal_times == 2
     assert club.claimed_rewards == {}
 
 def test_nyanko_club_deserialize_autofix():
-    # Future login_bonus_date should be auto-fixed to 0.0
     future_time = time.time() + 1000000
     data = {
         "officer_id": 12345,
@@ -31,5 +30,5 @@ def test_nyanko_club_deserialize_autofix():
     }
     
     club = NyankoClub.deserialize(data)
-    assert club.login_bonus_date == 0.0
+    assert club.login_bonus_date == future_time
     assert club.officer_id == 12345

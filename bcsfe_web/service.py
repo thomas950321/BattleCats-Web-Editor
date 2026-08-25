@@ -787,14 +787,30 @@ class BCSFE_Service:
         except Exception as e:
             return None, f"解析歷史存檔失敗 (資料可能已損壞): {str(e)}"
 
-        # 2. 下載目標帳號
-        success, msg = await self.login_and_fetch(
-            target_tc, target_cc, country_code, game_version
-        )
-        if not success:
-            return None, f"目標帳號登入失敗：{msg}"
-        target_save = self.current_save
-        target_handler = self.server_handler
+        # 2. 下載目標帳號或自動註冊全新帳號
+        if target_tc and target_cc:
+            success, msg = await self.login_and_fetch(
+                target_tc, target_cc, country_code, game_version
+            )
+            if not success:
+                return None, f"目標帳號登入失敗：{msg}"
+            target_save = self.current_save
+            target_handler = self.server_handler
+        else:
+            # 建立全新帳號流程：直接深拷貝來源存檔，然後調用 create_new_account() 取得全新 Inquiry Code 與憑證
+            target_save = copy.deepcopy(source_save)
+            
+            # 設定正確的國家碼與版本
+            cc_obj = core.CountryCode.from_code(country_code)
+            gv_obj = core.GameVersion.from_string(game_version)
+            target_save.cc = cc_obj
+            target_save.game_version = gv_obj
+            
+            # 使用 ServerHandler 向伺服器註冊
+            target_handler = core.ServerHandler(target_save)
+            success = target_handler.create_new_account()
+            if not success:
+                return None, "自動註冊全新空殼帳號失敗，請稍後再試"
 
         # 3. 複製欄位（除身分與時間欄位外）
         IDENTITY_FIELDS = [

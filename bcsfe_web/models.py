@@ -18,8 +18,8 @@ class TransplantRequest(BaseModel):
 
 class RestoreRequest(BaseModel):
     record_id: int
-    target_transfer_code: str
-    target_confirmation_code: str
+    target_transfer_code: Optional[str] = None
+    target_confirmation_code: Optional[str] = None
     country_code: str = "en"
     game_version: str = "15.5.0"
 

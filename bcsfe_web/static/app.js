@@ -710,6 +710,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('restore-record-id').value = recordId;
                     document.getElementById('restore-source-summary').textContent = summary;
 
+                    // 重置為自動註冊勾選狀態並隱藏手動輸入框
+                    const restoreAutoShell = document.getElementById('restoreAutoShell');
+                    if (restoreAutoShell) {
+                        restoreAutoShell.checked = true;
+                    }
+                    const inputs = document.getElementById('restoreManualInputs');
+                    if (inputs) {
+                        inputs.classList.add('hidden');
+                    }
+
                     const formContainer = document.getElementById('restore-form-container');
                     formContainer.classList.remove('hidden');
                     formContainer.scrollIntoView({ behavior: 'smooth' });
@@ -733,6 +743,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const restoreAutoShell = document.getElementById('restoreAutoShell');
+    if (restoreAutoShell) {
+        restoreAutoShell.addEventListener('change', (e) => {
+            const inputs = document.getElementById('restoreManualInputs');
+            if (inputs) {
+                if (e.target.checked) {
+                    inputs.classList.add('hidden');
+                } else {
+                    inputs.classList.remove('hidden');
+                }
+            }
+        });
+    }
+
     const btnCancelRestore = document.getElementById('btnCancelRestore');
     if (btnCancelRestore) {
         btnCancelRestore.addEventListener('click', () => {
@@ -744,18 +768,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnStartRestore) {
         btnStartRestore.addEventListener('click', async () => {
             const recordId = document.getElementById('restore-record-id').value;
-            const targetTC = document.getElementById('restoreDstTC').value.trim();
-            const targetCC = document.getElementById('restoreDstCC').value.trim();
+            const autoShell = document.getElementById('restoreAutoShell')?.checked || false;
+            const targetTC = autoShell ? null : document.getElementById('restoreDstTC').value.trim();
+            const targetCC = autoShell ? null : document.getElementById('restoreDstCC').value.trim();
             const cc = document.getElementById('restoreCountryCode').value;
             const gv = document.getElementById('restoreGameVersion').value.trim();
 
-            if (!targetTC || !targetCC) {
+            if (!autoShell && (!targetTC || !targetCC)) {
                 showNotification('請輸入目標空殼帳號的完整代碼', 'error');
                 return;
             }
 
             btnStartRestore.disabled = true;
-            btnStartRestore.textContent = '還原中...';
+            btnStartRestore.textContent = autoShell ? '註冊與複製中...' : '還原中...';
 
             try {
                 const res = await fetch('/admin/restore', {
@@ -779,8 +804,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 還原代碼只在畫面顯示，不寫入瀏覽器儲存區。
 
                 setResultMode(true);
-                if (typeof resultTitle !== 'undefined' && resultTitle) resultTitle.textContent = '存檔還原成功！';
-                if (typeof resultWarning !== 'undefined' && resultWarning) resultWarning.textContent = '目標空殼帳號已注入所選備份存檔，以下是新的引繼代碼。';
+                if (typeof resultTitle !== 'undefined' && resultTitle) {
+                    resultTitle.textContent = autoShell ? '存檔複製成功！' : '存檔還原成功！';
+                }
+                if (typeof resultWarning !== 'undefined' && resultWarning) {
+                    resultWarning.textContent = autoShell 
+                        ? '已自動為您註冊全新空殼帳號，並成功複製所選備份存檔，以下是新的引繼代碼。' 
+                        : '目標空殼帳號已注入所選備份存檔，以下是新的引繼代碼。';
+                }
 
                 resTransferCode.textContent = data.new_transfer_code;
                 resConfCode.textContent = data.new_confirmation_code;
@@ -789,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('restore-form-container').classList.add('hidden');
                 resultPanel.classList.remove('hidden');
 
-                showNotification('存檔成功還原至目標空殼帳號！', 'success');
+                showNotification(autoShell ? '存檔已成功複製到全新空殼帳號！' : '存檔成功還原至目標空殼帳號！', 'success');
 
             } catch (err) {
                 showNotification(err.message || '還原操作失敗', 'error');

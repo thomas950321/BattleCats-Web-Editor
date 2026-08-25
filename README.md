@@ -7,82 +7,76 @@ sdk: docker
 pinned: false
 ---
 
-# 🐱 Battle Cats Web Editor | 貓咪大戰爭網頁修改器
+# Battle Cats Web Editor | 貓咪大戰爭網頁修改器
 
-![GitHub Repo stars](https://img.shields.io/github/stars/thomas950321/BattleCats-Web-Editor?style=for-the-badge)
-![GitHub license](https://img.shields.io/github/license/thomas950321/BattleCats-Web-Editor?style=for-the-badge)
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-
-這是基於 [BCSFE-Python](https://github.com/fieryhenry/BCSFE-Python) 核心所開發的**視覺化網頁修改器**。它結合了強大的 Python 後端邏輯與現代化的 Web 前端介面，讓你在瀏覽器中就能輕鬆管理與修改《貓咪大戰爭》的存檔。
+這是基於 [BCSFE-Python](https://github.com/fieryhenry/BCSFE-Python) 核心所開發的網頁修改器。提供網頁介面，方便進行《貓咪大戰爭》的存檔管理與編輯。
 
 ---
 
-## ✨ 專案特色 (Features)
+## 功能特色
 
-*   **🧬 獨創：高安全性存檔移植 (Safe Transplant Pro Max)：**
-    *   **完美繼承：** 將來源「強帳」的心血進度（貓咪、金寶、關卡全紀錄）無損深層拷貝至「空殼」目標帳號中。
-    *   **身分隔離：** 嚴格保留目標空殼帳號的「詢問碼 (Inquiry Code)」與「設備指紋」，打造完全獨立的全新乾淨帳號，徹底斬斷官方追蹤鏈。
-    *   **數據指紋清洗：** 自動洗白所有隱藏的時間戳記為當前時間，並強制清除潛在的封號標記 (Ban Flags)，從根源消除邏輯死角與連帶封鎖風險。
-    *   **來源絕對安全：** 對原始強帳僅進行單向讀取 (Read-Only)，確保作為母體的來源帳號 100% 零風險。
-*   **🌐 視覺化介面：** 告別繁瑣的指令列，使用直觀的網頁表單進行修改。
-*   **⚡ 雲端同步技術：** 整合 GitHub Actions，每天自動抓取原作者的最新代碼，確保支援最新的遊戲版本！
-*   **🛡️ 安全機制 (Dirty Check)：** 僅上傳有修改過的數值，降低存檔毀損風險，維護帳號安全性。
-*   **📦 全功能支援：**
-    *   **基礎資源：** 貓罐頭、經驗值 (XP)、NP、領導力、遊玩時間。
-    *   **轉蛋券：** 普通、稀有、白金、傳說轉蛋券及碎片的修改。
-    *   **素材與消耗品：** 戰鬥用品、喵力達、貓眼石、貓薄荷、基地素材。
-    *   **進階功能：** 本能玉 (Talent Orbs)、迷宮獎牌等。
+*   **存檔移植與複製**
+    *   **無損拷貝**：將來源存檔的完整進度（貓咪、金寶、關卡進度等）複製到目標帳號。
+    *   **保留身分**：保留目標帳號的「詢問碼 (Inquiry Code)」與相關憑證，避免帳號衝突。
+    *   **安全清理**：重設存檔中的時間戳記，並清除封號標記 (banned, show_ban_message)。
+    *   **一鍵自動註冊**（新功能）：複製時可選擇自動在伺服器註冊一個全新空殼帳號，不需要手動準備或輸入空殼帳的引繼代碼。
+*   **修改數值比對 (Dirty Check)**：只會上傳有被修改的欄位，降低上傳損壞或異常的機率。
+*   **完整資源編輯**：
+    *   基礎資源：貓罐頭、經驗值 (XP)、NP、領導力、遊玩時間、黃金會員續訂次數等。
+    *   轉蛋券：銀券、金券、白金券、傳說券、白金碎片。
+    *   道具與素材：戰鬥道具、喵力達、貓眼石、貓薄荷與獸石、基地素材。
+    *   其他：本能玉、迷宮獎牌等。
 
 ---
 
-## 🚀 快速開始 (Quick Start)
+## 快速開始
 
-### 使用方法
-1.  在遊戲內進入「設定」 -> 「轉移引繼資料」。
-2.  點擊「上傳存檔到伺服器」，取得 **引繼碼 (Transfer Code)** 與 **認證碼 (Confirmation Code)**。
-3.  開啟此網頁修改器，輸入代碼並選擇對應的國家版本（EN, TW, JP, KR）。
-4.  修改完成後點擊「儲存並上傳至伺服器」，會取得一組**新的代碼**。
-5.  回到遊戲中使用「恢復引繼資料」輸入新代碼即可！
+### 修改步驟
+1.  在遊戲中進入「設定」 -> 「轉移引繼資料」。
+2.  點擊「上傳存檔到伺服器」，記下**引繼碼 (Transfer Code)** 與 **認證碼 (Confirmation Code)**。
+3.  在修改器網頁輸入代碼，並選擇對應的地區（EN, TW, JP, KR）與遊戲版本。
+4.  完成編輯後點擊「儲存並上傳至伺服器」，取得新的引繼碼。
+5.  在遊戲中選擇「恢復引繼資料」並輸入新代碼即可。
 
 ---
 
-## 🛠️ 開發與部署 (Deployment)
+## 本地開發與部署
 
-如果你想在本地執行此專案：
+如果您想在本地執行此專案：
 
-1.  **複製專案：**
+1.  **複製專案**
     ```bash
     git clone https://github.com/thomas950321/BattleCats-Web-Editor.git
     cd BattleCats-Web-Editor
     ```
-2.  **安裝依賴：**
+2.  **安裝依賴**
     ```bash
     pip install -r requirements.txt
     ```
-3.  **啟動服務：**
+3.  **啟動服務**
     ```bash
     python bcsfe_web/main.py
     ```
-4.  **訪問網頁：**
+4.  **訪問網頁**
     開啟瀏覽器前往 `http://localhost:8000`
 
 ---
 
-## ⚠️ 免責聲明 (Disclaimer)
+## 免責聲明
 
 *   本工具僅供學術交流與技術研究使用。
-*   過度修改帳號數值可能導致帳號被官方封鎖 (Ban)，請自行承擔風險。
-*   請尊重遊戲開發商 (PONOS)，建議適度娛樂。
+*   過度修改帳號數值可能導致帳號被官方封鎖，請自行承擔風險。
+*   請支持正版遊戲。
 
 ---
 
-## ❤️ 致謝 (Credits)
+## 致謝
 
-*   **Core Logic:** [fieryhenry/BCSFE-Python](https://github.com/fieryhenry/BCSFE-Python) - 感謝原作者提供強大的存檔處理核心。
-*   **Web Framework:** [FastAPI](https://fastapi.tiangolo.com/) & Vanilla JavaScript.
+*   **Core Logic:** [fieryhenry/BCSFE-Python](https://github.com/fieryhenry/BCSFE-Python)
+*   **Web Framework:** [FastAPI](https://fastapi.tiangolo.com/)
 
 ---
 
-## 📜 授權 (License)
+## 授權
 
-本專案遵循與原核心相同的 **GNU GPLv3** 開放原始碼授權。
+本專案遵循 **GNU GPLv3** 開源授權協議。

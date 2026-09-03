@@ -15,3 +15,7 @@ pyrightconfig.json
 bcsfe.db
 uploads_history.log
 *.log
+
+# Temp clone of reverse-skill
+reverse-skill/
+scratch/

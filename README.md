@@ -49,34 +49,6 @@ Battle Cats Web Editor 是專為《貓咪大戰爭》打造的高安全性網頁
 
 ![Battle Cats Web Editor 系統架構圖](assets/architecture.png)
 
-```mermaid
-graph TD
-    subgraph Client ["前端 UI (Client Browser)"]
-        SPA["單頁應用程式 (HTML5 / JS / CSS)<br/>• 髒資料動態 Clamp 防護<br/>• localStorage 引繼碼備援"]
-    end
-
-    subgraph WebServer ["Web 修改器服務 (FastAPI / Python 3.10)"]
-        SM["SessionManager<br/>• UUID Token 驗證<br/>• 30 分鐘閒置自動銷毀"]
-        API["FastAPI 路由 (main.py)<br/>• /login, /save/patch, /save/upload"]
-        SVC["BCSFE Service (service.py)<br/>• Pydantic v2 數據校驗<br/>• Dirty Check 增量上傳比對<br/>• 帳號無損移植 (Transplant)"]
-        DIAG["法醫診斷模組 (diagnose_account.py)<br/>• 帳號年齡 & 時間戳比對<br/>• 封號旗標安全性判定"]
-        CORE["BCSFE Core Engine (bcsfe.core)<br/>• SaveFile 記憶體數據解析<br/>• 資源 / 關卡 / 貓咪數值計算"]
-        SH["ServerHandler (server_handler.py)<br/>• 打包簽章數據<br/>• PONOS 加密通訊協定"]
-    end
-
-    subgraph PONOS ["PONOS 官方遊戲伺服器"]
-        PNS["PONOS Transfer Server<br/>• 引繼碼驗證 & 存檔下載/上傳<br/>• 全新空殼帳號自動註冊"]
-    end
-
-    SPA -->|RESTful API (JSON / Session Token)| API
-    SM -.->|Token 驗證| API
-    API -->|呼叫業務邏輯| SVC
-    SVC -->|SaveFile 記憶體更新| CORE
-    SVC -.->|安全性診斷| DIAG
-    CORE -->|簽章數據| SH
-    SH -->|HTTPS 引繼協定| PNS
-```
-
 ## 快速開始
 
 ### 存檔修改流程

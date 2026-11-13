@@ -255,9 +255,10 @@ except Exception as e:
     check("本能玉讀取", "WARN", str(e))
 
 
-# ─── 步驟 10：Officer Pass (遊戲時數) ────────────────────
-section("9. 遊戲時數")
+# ─── 步驟 10：遊戲時數與遊玩強度比對 ───────────────────────
+section("9. 遊戲時數與遊玩強度比對 (Heritage & Intensity)")
 
+play_hours = 0
 try:
     officer_pass = getattr(sf, 'officer_pass', None)
     if officer_pass:
@@ -265,13 +266,49 @@ try:
         play_hours = int(play_time_raw) // 30 // 3600
         check("遊戲時數", "INFO", f"{play_hours} 小時")
         if play_hours > 50_000:
-            check("遊戲時數範圍", "WARN", "時數極高，請確認是否合理")
+            check("遊戲時數上限", "WARN", f"{play_hours:,} 小時 (時數極高，請確認是否合理)")
         else:
-            check("遊戲時數範圍", "PASS", "正常")
+            check("遊戲時數上限", "PASS", "正常")
+
+        # 貓咪俱樂部加入時間（真實出生日期參考）
+        club = getattr(officer_pass, 'gold_pass', None)
+        if club and getattr(club, 'start_date_total', 0) > 0:
+            from datetime import datetime
+            join_date = datetime.fromtimestamp(club.start_date_total).strftime("%Y-%m-%d %H:%M:%S")
+            check("貓咪俱樂部首次加入", "INFO", str(join_date))
+        else:
+            check("貓咪俱樂部首次加入", "INFO", "未加入或無紀錄")
     else:
         check("Officer Pass", "INFO", "屬性不存在")
 except Exception as e:
     check("遊戲時數讀取", "WARN", str(e))
+
+# 累計登入天數與遊玩強度比對
+try:
+    total_logins = 0
+    if hasattr(sf, "logins") and sf.logins and hasattr(sf.logins, "logins"):
+        login_1 = sf.logins.get_login(1)
+        if login_1 and getattr(login_1, 'count', 0) > 0:
+            total_logins = login_1.count
+        else:
+            counts = [getattr(l, 'count', 0) for l in sf.logins.logins.values()]
+            total_logins = max(counts) if counts else 0
+
+    if total_logins > 0:
+        est_years = round(total_logins / 365, 2)
+        check("累計登入天數", "INFO", f"{total_logins} 天 (約 {est_years} 年)")
+
+        hours_per_day = play_hours / total_logins
+        if hours_per_day > 18:
+            check("遊玩強度比對 (時數/天數)", "FAIL", f"平均每日 {hours_per_day:.1f}h (超越人類極限，疑為加速器或移植存檔)")
+        elif hours_per_day > 8:
+            check("遊玩強度比對 (時數/天數)", "WARN", f"平均每日 {hours_per_day:.1f}h (高強度活躍，易引發人工審核)")
+        else:
+            check("遊玩強度比對 (時數/天數)", "PASS", f"平均每日 {hours_per_day:.1f}h (合理範圍)")
+    else:
+        check("累計登入天數", "INFO", "無登入記錄資料")
+except Exception as e:
+    check("登入天數讀取", "WARN", str(e))
 
 
 # ─── 最終摘要 ─────────────────────────────────────────────

@@ -120,7 +120,7 @@ BCSFE-Python/
 │   └── service.py       # 核心轉接服務與業務邏輯
 ├── src/bcsfe/core/      # BCSFE 存檔解析與伺服器通訊引擎
 ├── docs/                # 專案文件、架構圖與審計指南
-├── scripts/             # 工具與診斷腳本 (diagnose_account.py, deep_scan.py 等)
+├── scripts/             # 工具與診斷腳本 (diagnose_account.py, transplant_save.py 等)
 ├── data/                # 專案資料集 (ubers_list.txt 等)
 ├── tests/               # 自動化單元測試
 ├── Dockerfile           # Docker 容器構建檔

@@ -119,7 +119,10 @@ BCSFE-Python/
 │   ├── database.py      # 歷史存檔資料庫
 │   └── service.py       # 核心轉接服務與業務邏輯
 ├── src/bcsfe/core/      # BCSFE 存檔解析與伺服器通訊引擎
-├── diagnose_account.py  # 帳號安全性分析腳本
+├── docs/                # 專案文件、架構圖與審計指南
+├── scripts/             # 工具與診斷腳本 (diagnose_account.py, deep_scan.py 等)
+├── data/                # 專案資料集 (ubers_list.txt 等)
+├── tests/               # 自動化單元測試
 ├── Dockerfile           # Docker 容器構建檔
 └── pyproject.toml       # Python 專案配置
 ```

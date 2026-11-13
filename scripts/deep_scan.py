@@ -2,10 +2,10 @@ import sys
 import os
 
 # 確保加載路徑
-current_dir = os.getcwd()
-src_path = os.path.join(current_dir, "src")
-if src_path not in sys.path:
-    sys.path.append(src_path)
+file_dir = os.path.dirname(os.path.abspath(__file__))
+for candidate in [os.path.join(file_dir, "src"), os.path.join(file_dir, "..", "src"), os.path.join(os.getcwd(), "src")]:
+    if os.path.exists(candidate) and candidate not in sys.path:
+        sys.path.append(candidate)
 
 from bcsfe import core
 from bcsfe_web.service import service

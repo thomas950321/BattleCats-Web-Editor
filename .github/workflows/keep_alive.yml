@@ -24,4 +24,4 @@ jobs:
       - name: Ping Render
         env:
           RENDER_URL: ${{ secrets.RENDER_URL }}
-        run: python keep_alive.py
+        run: python scripts/keep_alive.py

@@ -13,7 +13,7 @@
 
 ## 主要參考腳本
 
-- `diagnose_account.py` 是目前帳號檢查流程的參考來源。
+- `scripts/diagnose_account.py` 是目前帳號檢查流程的參考來源。
 - 該檔案可能含有亂碼與硬編碼帳號資訊；使用前先檢查語法是否可執行。
 - 若腳本無法執行，請不要直接大改腳本；先用它的檢查邏輯作為清單，透過小型臨時讀取流程或既有 `bcsfe.core` API 進行唯讀檢查。
 - 載入核心資料時通常需要：
@@ -201,7 +201,7 @@
 ## 驗證建議
 
 - 修改檢查工具後，優先跑針對性測試。
-- 若執行全量 `pytest`，注意 `scratch/test_supabase.py` 可能需要 `SUPABASE_URL` 與 `SUPABASE_KEY`，這類環境問題不要誤判為帳號檢查失敗。
+- 專案已在 `pyproject.toml` 配置 `testpaths = ["tests"]`，執行全量 `pytest` 時僅會執行標準單元測試；`scratch/manual_test_supabase.py` 為手動驗證腳本，執行需依賴 `SUPABASE_URL` 與 `SUPABASE_KEY`。
 - 對黃金會員邏輯至少跑：
   - `pytest -q .\tests\test_gold_pass_renewal_web.py .\tests\test_nyanko_club.py`
 

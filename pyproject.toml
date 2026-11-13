@@ -36,5 +36,9 @@ package-dir = { "" = "src" }
 [tool.pyright]
 typeCheckingMode = "strict"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
 [project.scripts]
 bcsfe = "bcsfe:run"

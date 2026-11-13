@@ -17,9 +17,16 @@ python transplant_save.py SAVE_DATA_SOURCE SAVE_DATA_TARGET --output SAVE_DATA_E
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import copy
 from pathlib import Path as PyPath
+
+# ── 設定模組路徑 ─────────────────────────────────────────────────────────────
+file_dir = os.path.dirname(os.path.abspath(__file__))
+for candidate in [os.path.join(file_dir, "src"), os.path.join(file_dir, "..", "src"), os.path.join(os.getcwd(), "src")]:
+    if os.path.exists(candidate) and candidate not in sys.path:
+        sys.path.append(candidate)
 
 # ── 初始化 bcsfe core（必須在 import SaveFile 之前） ──────────────────────
 import bcsfe.core as core

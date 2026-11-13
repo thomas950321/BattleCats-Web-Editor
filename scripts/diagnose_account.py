@@ -10,9 +10,9 @@ import os
 
 # --- 路徑設定 ---
 current_dir = os.path.dirname(os.path.abspath(__file__))
-src_path = os.path.join(current_dir, "src")
-if src_path not in sys.path:
-    sys.path.insert(0, src_path)
+for candidate in [os.path.join(current_dir, "src"), os.path.join(current_dir, "..", "src")]:
+    if os.path.exists(candidate) and candidate not in sys.path:
+        sys.path.insert(0, candidate)
 
 from bcsfe import core
 

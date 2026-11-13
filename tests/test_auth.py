@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 os.environ["EDITOR_PASSWORD"] = "test_editor_pwd"
 os.environ["ADMIN_PASSWORD"] = "test_admin_pwd"
 
-from bcsfe_web.main import app
+from bc_editor_web.main import app
 
 client = TestClient(app)
 
@@ -54,7 +54,7 @@ def test_admin_auth_fail_wrong_password():
 
 def test_admin_auth_success():
     # Mock database get_save_history to avoid DB dependency issues
-    from bcsfe_web import database
+    from bc_editor_web import database
     original_get_history = database.get_save_history
     database.get_save_history = lambda: []
     try:

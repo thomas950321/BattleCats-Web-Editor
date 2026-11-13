@@ -8,10 +8,10 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 # pyrefly: ignore [missing-import]
-from bcsfe_web.models import SaveLogin, SavePatchRequest, TransplantRequest, RestoreRequest
+from bc_editor_web.models import SaveLogin, SavePatchRequest, TransplantRequest, RestoreRequest
 # pyrefly: ignore [missing-import]
-from bcsfe_web.service import session_manager, BCSFE_Service
-from bcsfe_web import scanner
+from bc_editor_web.service import session_manager, BCSFE_Service
+from bc_editor_web import scanner
 import uvicorn
 import traceback
 import sys
@@ -219,7 +219,7 @@ async def transplant_save(req: TransplantRequest):
 async def get_history():
     try:
         # pyrefly: ignore [missing-import]
-        from bcsfe_web.database import get_save_history
+        from bc_editor_web.database import get_save_history
         history = get_save_history()
         return {"status": "success", "history": history}
     except Exception as e:
@@ -228,7 +228,7 @@ async def get_history():
 @app.post("/admin/history/{record_id}/pin", dependencies=[Depends(verify_admin_password)])
 async def toggle_pin(record_id: int):
     try:
-        from bcsfe_web.database import toggle_pin_record
+        from bc_editor_web.database import toggle_pin_record
         is_pinned = toggle_pin_record(record_id)
         return {"status": "success", "is_pinned": is_pinned}
     except Exception as e:
@@ -260,7 +260,7 @@ async def restore_save(req: RestoreRequest):
 async def delete_record(record_id: int):
     try:
         # pyrefly: ignore [missing-import]
-        from bcsfe_web.database import delete_save_record
+        from bc_editor_web.database import delete_save_record
         delete_save_record(record_id)
         return {"status": "success", "message": "紀錄已刪除"}
     except Exception as e:

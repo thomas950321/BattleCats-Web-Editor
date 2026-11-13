@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "bcsfe.db")
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "bc_editor.db")
 
 # Supabase integration
 use_supabase = False
@@ -28,7 +28,7 @@ if supabase_url and supabase_key:
     except Exception as e:
         print(f"[DATABASE] Failed to initialize Supabase client: {e}. Falling back to SQLite.", flush=True)
 else:
-    print("[DATABASE] Supabase credentials not configured. Using local SQLite (bcsfe.db).", flush=True)
+    print("[DATABASE] Supabase credentials not configured. Using local SQLite (bc_editor.db).", flush=True)
 
 
 def get_db_connection():

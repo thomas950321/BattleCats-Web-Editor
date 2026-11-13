@@ -37,7 +37,7 @@ CI/CD            │  GitHub Actions (自動同步上游更新)
 ```
 BCSFE-Python/
 │
-├── bcsfe_web/                       # Web 應用程式層（自研）★
+├── bc_editor_web/                   # Web 應用程式層（自研）★
 │   ├── main.py                      # FastAPI 入口、路由定義、啟動事件
 │   ├── models.py                    # Pydantic Request/Response 模型
 │   ├── service.py                   # 業務邏輯服務層（核心橋接器）★ 最重要
@@ -84,7 +84,7 @@ BCSFE-Python/
 
 ---
 
-## 4. API 路由（bcsfe_web/main.py）
+## 4. API 路由（bc_editor_web/main.py）
 
 | 方法 | 路徑 | 功能 | 對應 Service 方法 | 需 Session Token |
 |------|------|------|-----------------|-----------------|
@@ -180,6 +180,6 @@ PONOS 伺服器  →  新轉移碼 + 認證碼  →  瀏覽器
 
 | 平台 | 設定檔 | Port | 啟動命令 |
 |------|--------|------|---------|
-| Render | `render.yaml` | `$PORT` | `uvicorn bcsfe_web.main:app --host 0.0.0.0 --port $PORT` |
-| HF Spaces | `Dockerfile` | `7860` | `python bcsfe_web/main.py` |
-| 本地開發 | — | `8000` | `python bcsfe_web/main.py` |
+| Render | `render.yaml` | `$PORT` | `uvicorn bc_editor_web.main:app --host 0.0.0.0 --port $PORT` |
+| HF Spaces | `Dockerfile` | `7860` | `python bc_editor_web/main.py` |
+| 本地開發 | — | `8000` | `python bc_editor_web/main.py` |

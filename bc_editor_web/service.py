@@ -577,7 +577,7 @@ class BCSFE_Service:
             
             # 將每次修改/上傳後的存檔完全儲存至 SQLite 資料庫中
             try:
-                from bcsfe_web.database import insert_save_history
+                from bc_editor_web.database import insert_save_history
                 save_file = self.current_save
                 save_data_b64 = save_file.to_data().to_base_64()
                 inquiry_code = getattr(save_file, "inquiry_code", "")
@@ -772,7 +772,7 @@ class BCSFE_Service:
         import copy
         import time
         import base64
-        from bcsfe_web.database import get_save_record
+        from bc_editor_web.database import get_save_record
 
         # 1. 從資料庫讀取來源存檔
         record = get_save_record(record_id)

@@ -95,7 +95,7 @@ Battle Cats Web Editor 是專為《貓咪大戰爭》玩家設計的網頁版存
 
 3. 啟動服務：
    ```bash
-   python bcsfe_web/main.py
+   python bc_editor_web/main.py
    ```
 
 4. 開啟瀏覽器訪問 `http://localhost:8000`。
@@ -110,8 +110,8 @@ docker run -d -p 8000:7860 battlecats-web-editor
 ## 專案結構
 
 ```
-BCSFE-Python/
-├── bcsfe_web/           # FastAPI 網頁服務層 (API 路由、模型、業務服務)
+bc_editor/
+├── bc_editor_web/       # FastAPI 網頁服務層 (API 路由、模型、業務服務)
 │   ├── static/          # 前端單頁應用 (HTML, CSS, JS)
 │   ├── main.py          # Web 服務入口點
 │   ├── models.py        # 資料模型定義

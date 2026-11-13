@@ -15,11 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 建立測試存檔所需的目錄 (Linux 預設路徑)
 RUN mkdir -p /root/Documents/bcsfe/saves/
 
-# 複製專案原始碼 (包含 bcsfe_web 和 src)
+# 複製專案原始碼 (包含 bc_editor_web 和 src)
 COPY . .
 
 # 將範例存檔放到預期位置，讓 TEST 模式可用
-RUN cp bcsfe_web/test_data/SAVE_DATA /root/Documents/bcsfe/saves/SAVE_DATA
+RUN cp bc_editor_web/test_data/SAVE_DATA /root/Documents/bcsfe/saves/SAVE_DATA
 
 # 設定環境變數，確保 Python 能找到模組
 ENV PYTHONPATH=/app
@@ -29,4 +29,4 @@ ENV PORT=7860
 EXPOSE 7860
 
 # 啟動指令
-CMD ["python", "bcsfe_web/main.py"]
+CMD ["python", "bc_editor_web/main.py"]

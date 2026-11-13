@@ -11,12 +11,12 @@
 ```
 底層依賴（不主動修改）
 ├── src/bcsfe/core/         ← 上游引擎
-├── bcsfe_web/models.py     ← API 契約，牽一髮動全身
-└── bcsfe_web/service.py    ← 核心橋接，所有功能的基礎
+├── bc_editor_web/models.py  ← API 契約，牽一髮動全身
+└── bc_editor_web/service.py ← 核心橋接，所有功能的基礎
 
 應用層（可自由迭代）
-├── bcsfe_web/main.py       ← 路由擴充
-├── bcsfe_web/static/       ← 前端功能新增
+├── bc_editor_web/main.py    ← 路由擴充
+├── bc_editor_web/static/    ← 前端功能新增
 └── 診斷工具腳本            ← 獨立，不影響 Web
 ```
 
@@ -79,5 +79,5 @@ T-002 → T-001 → T-010 → T-012 → T-011
 
 1. **每個 Ticket 完成後**，必須同步更新 `Dev_Status.md`
 2. **每修改 `service.py`**，必須確認 `models.py` 型別定義一致
-3. **所有 UI 改動**，必須本地 `python bcsfe_web/main.py` 確認後才 Push
+3. **所有 UI 改動**，必須本地 `python bc_editor_web/main.py` 確認後才 Push
 4. **涉及數值修改的功能**，Clamp 邏輯不可低於既有安全標準（catfood ≤ 45,000）

@@ -13,6 +13,7 @@ pyrightconfig.json
 
 # Local databases and account-related logs
 bcsfe.db
+bc_editor.db
 uploads_history.log
 *.log
 

@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from bcsfe_web.service import BCSFE_Service, core
+from bc_editor_web.service import BCSFE_Service, core
 
 
 class DummyGoldPass(SimpleNamespace):

@@ -161,5 +161,5 @@ else:
 
 ---
 
-*對應程式：`bcsfe_web/scanner.py` → `run_diagnosis()` | API：`GET /save/diagnose`*
+*對應程式：`bc_editor_web/scanner.py` → `run_diagnosis()` | API：`GET /save/diagnose`*
 *對應 Skill：`account-security-analyzer`*

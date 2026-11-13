@@ -1,5 +1,5 @@
 """
-bcsfe_web/scanner.py
+bc_editor_web/scanner.py
 帳號安全性深度診斷模組
 基於 account-security-analyzer Skill 的診斷協議實作
 """
